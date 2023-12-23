@@ -1,0 +1,28 @@
+version: "0.0.1"
+services:
+  api:
+    build:
+      context: .
+      dockerfile: dockerfiles/Dockerfile
+    ports:
+      - 8080:8080
+    environment:
+      SPRING_PROFILES_ACTIVE: local
+      DB_HOST: mysql
+
+  mysql:
+    image: mysql:8.2.0
+    ports:
+      - 3306:3306
+    environment:
+      TZ: Asia/Seoul
+      MYSQL_ROOT_PASSWORD: admin
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci
+    volumes:
+      - mysql:/var/lib/mysql
+    restart: unless-stopped
+
+volumes:
+  mysql: {}
