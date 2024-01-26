@@ -11,21 +11,11 @@ class OAuth2Attribute(
     companion object {
         fun of(provider: String, attributeKey: String, attributes: Map<String, Any>): OAuth2Attribute {
             return when (provider) {
-                "google" -> ofGoogle(attributeKey, attributes)
                 "kakao" -> ofKakao(attributeKey, attributes)
                 "naver" -> ofNaver(attributeKey, attributes)
+                "google" -> ofGoogle(attributeKey, attributes)
                 else -> throw IllegalArgumentException("지원하지 않는 OAuth2 공급자입니다.")
             }
-        }
-
-        private fun ofGoogle(attributeKey: String, attributes: Map<String, Any>): OAuth2Attribute {
-            return OAuth2Attribute(
-                attributes = attributes,
-                provider = attributeKey,
-                email = attributes["email"] as String,
-                nickName = attributes["name"] as String,
-                picture = attributes["picture"] as String,
-            )
         }
 
         private fun ofKakao(attributeKey: String, attributes: Map<String, Any>): OAuth2Attribute {
@@ -50,6 +40,16 @@ class OAuth2Attribute(
                 email = response["email"] as String,
                 nickName = response["nickname"] as String,
                 picture = response["profile_image"] as String,
+            )
+        }
+
+        private fun ofGoogle(attributeKey: String, attributes: Map<String, Any>): OAuth2Attribute {
+            return OAuth2Attribute(
+                attributes = attributes,
+                provider = attributeKey,
+                email = attributes["email"] as String,
+                nickName = attributes["name"] as String,
+                picture = attributes["picture"] as String,
             )
         }
     }

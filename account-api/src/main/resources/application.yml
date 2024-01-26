@@ -9,6 +9,9 @@ spring:
     username: sa
     password:
     driver-class-name: org.h2.Driver
+  h2:
+    console:
+      enabled: true
   jpa:
     hibernate:
       ddl-auto: create
@@ -47,16 +50,11 @@ spring:
             client-authentication-method: client_secret_post
             authorization-grant-type: authorization_code
             client-name: kakao
-            scope:
-              - account_email
-              - profile_nickname
-              - profile_image
+            scope: account_email, profile_nickname, profile_image
           google:
             client-id: ENC(7vERj35mMHmIKeEsaIsy3u0NZH4LmUdTKSgakSRlZObdo4TPafSxTV/8Ef+yXRUW/4RTpaK6pvDggnJkzIaM28913xaYwBt6FMdlKKenZsuEEehazNSN6w==)
             client-secret: ENC(UgyFPoakfMpsJ2r92AUD/3ZNP4rIMUIL+i5/yeFKpRH2DbRQx4RgEgT3ny8JFmM/)
-            scope:
-              - email
-              - profile
+            scope: email, profile
           naver:
             client-id: ENC(03hDNDCgRZOrvQh9Mm2ETL+hYUKXnBjGIJId8oz9ymA=)
             client-secret: ENC(2w7/3KWbzbqwBKZLAyQfKMITJUdmI55j)
@@ -64,10 +62,7 @@ spring:
             clientAuthenticationMethod: client_secret_post
             authorization-grant-type: authorization_code
             client-name: naver
-            scope:
-              - nickname
-              - email
-              - profile_image
+            scope: email, nickname, profile_image
         provider:
           kakao:
             authorization-uri: https://kauth.kakao.com/oauth/authorize

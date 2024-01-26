@@ -1,6 +1,5 @@
 package org.kkeunkkeun.pregen.account.service
 
-import org.kkeunkkeun.pregen.account.domain.Account
 import org.kkeunkkeun.pregen.account.domain.dto.AccountResponse
 import org.kkeunkkeun.pregen.account.infrastructure.AccountRepository
 import org.kkeunkkeun.pregen.account.infrastructure.security.jwt.JwtTokenProvider
@@ -23,14 +22,15 @@ class AccountService(
     private val authenticationManagerBuilder: AuthenticationManagerBuilder,
 ) {
 
-    fun logoutAccount(refreshToken: String) {
+    fun logoutAccount(accessToken: String, refreshToken: String) {
         if(SecurityContextHolder.getContext().authentication.principal.equals("anonymousUser")) {
             throw IllegalArgumentException("로그인 상태가 아닙니다.")
         }
+        jwtTokenUtil.blockAccessToken(accessToken)
         jwtTokenUtil.deleteRefreshToken(refreshToken)
     }
 
-    fun rotateToken(prevRefreshToken: String): JwtTokenResponse {
+    fun reIssueTokens(prevRefreshToken: String): JwtTokenResponse {
         jwtTokenProvider.validateRefreshToken(prevRefreshToken)
         val authentication = jwtTokenProvider.getAuthenticationByAccessToken(prevRefreshToken)
 

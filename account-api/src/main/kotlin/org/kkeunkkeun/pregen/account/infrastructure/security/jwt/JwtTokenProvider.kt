@@ -7,6 +7,7 @@ import io.jsonwebtoken.Jwts
 import io.jsonwebtoken.SignatureAlgorithm
 import io.jsonwebtoken.io.Decoders
 import io.jsonwebtoken.security.Keys
+import org.kkeunkkeun.pregen.common.infrastructure.RedisService
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
 import org.springframework.security.core.Authentication
@@ -25,6 +26,7 @@ class JwtTokenProvider(
     private var refreshExpirationTime: Long,
     @Value("\${custom.jwt.secret}") secretKey: String,
     private val jwtTokenUtil: JwtTokenUtil,
+    private val redisService: RedisService,
 ) {
 
     private val key = Keys.hmacShaKeyFor(Decoders.BASE64.decode(secretKey))

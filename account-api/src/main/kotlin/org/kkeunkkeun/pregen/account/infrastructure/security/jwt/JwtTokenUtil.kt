@@ -9,6 +9,8 @@ import java.util.concurrent.TimeUnit
 @Component
 class JwtTokenUtil(
     private val redisService: RedisService,
+    @Value("\${custom.jwt.token.access-expiration-time}")
+    private var accessExpirationTime: Long,
     @Value("\${custom.jwt.token.refresh-expiration-time}")
     private var refreshExpirationTime: Long,
 ) {
@@ -34,9 +36,18 @@ class JwtTokenUtil(
         redisService.set(refreshToken, email, refreshExpirationTime, TimeUnit.MILLISECONDS)
     }
 
+    fun getAccessToken(request: HttpServletRequest): String {
+        val accessToken = extractToken(request.getHeader("accessToken"))
+        return accessToken ?: throw IllegalArgumentException("accessToken이 존재하지 않습니다.")
+    }
+
     fun getRefreshToken(request: HttpServletRequest): String {
         val refreshToken = extractToken(redisService.get(request.getHeader("refreshToken")).toString())
         return refreshToken ?: throw IllegalArgumentException("refreshToken이 존재하지 않습니다.")
+    }
+
+    fun blockAccessToken(accessToken: String) {
+        redisService.set(accessToken, "BLOCKED", accessExpirationTime, TimeUnit.MILLISECONDS)
     }
 
     fun deleteRefreshToken(refreshToken: String) {

@@ -5,4 +5,10 @@ enum class SocialProvider(val value: String) {
     NAVER("naver"),
     GOOGLE("google");
 
+    companion object {
+        fun isType(value: String): SocialProvider {
+            return values().firstOrNull { it.value == value }
+                ?: throw IllegalArgumentException("Invalid SocialProvider value: $value")
+        }
+    }
 }

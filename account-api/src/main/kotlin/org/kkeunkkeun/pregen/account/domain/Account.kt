@@ -14,9 +14,11 @@ class Account(
     var profileImg: String? = null,
 
     @Column(nullable = false)
+    @Enumerated(EnumType.STRING)
     val socialProvider: SocialProvider,
 
     @Column(nullable = false)
+    @Enumerated(EnumType.STRING)
     var role: AccountRole,
 
     @Id
@@ -24,10 +26,11 @@ class Account(
     val id: Long? = null,
 ): BaseEntity() {
 
-    fun generatedSocialAccount(email: String, nickName: String, profileImg: String) {
+    fun generatedSocialAccount(email: String, nickName: String, profileImg: String): Account {
         this.email = email
         this.nickName = nickName
         this.profileImg = profileImg
+        return this
     }
 
     fun updateNickName(nickName: String) {

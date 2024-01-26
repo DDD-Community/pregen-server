@@ -19,8 +19,10 @@ class AccountController(
     @PreAuthorize("isAuthenticated()")
     @PostMapping("/logout")
     fun logout(request: HttpServletRequest): ResponseEntity<Any> {
+        val accessToken = jwtTokenUtil.getAccessToken(request)
         val refreshToken = jwtTokenUtil.getRefreshToken(request)
-        accountService.logoutAccount(refreshToken)
+
+        accountService.logoutAccount(accessToken, refreshToken)
         return ResponseEntity.ok().build()
     }
 
@@ -29,7 +31,7 @@ class AccountController(
     fun rotateToken(request: HttpServletRequest): ResponseEntity<JwtTokenResponse> {
         val refreshToken = JwtTokenUtil.extractToken(request.getHeader("refreshToken"))
             ?: throw IllegalArgumentException("refreshToken이 존재하지 않습니다.")
-        return ResponseEntity.ok().body(accountService.rotateToken(refreshToken))
+        return ResponseEntity.ok().body(accountService.reIssueTokens(refreshToken))
     }
 
     @PreAuthorize("isAuthenticated()")
