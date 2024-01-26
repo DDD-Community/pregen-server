@@ -10,7 +10,7 @@ import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.web.bind.annotation.*
 
 @RestController
-@RequestMapping("/api/accounts")
+@RequestMapping("/accounts")
 class AccountController(
     private val accountService: AccountService,
     private val jwtTokenUtil: JwtTokenUtil,
