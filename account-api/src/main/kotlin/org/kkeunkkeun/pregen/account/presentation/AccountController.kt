@@ -7,30 +7,42 @@ import org.kkeunkkeun.pregen.account.service.AccountService
 import org.springframework.http.ResponseEntity
 import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.security.core.context.SecurityContextHolder
-import org.springframework.web.bind.annotation.GetMapping
-import org.springframework.web.bind.annotation.PostMapping
-import org.springframework.web.bind.annotation.RequestMapping
-import org.springframework.web.bind.annotation.RestController
+import org.springframework.web.bind.annotation.*
 
 @RestController
 @RequestMapping("/api/accounts")
 class AccountController(
     private val accountService: AccountService,
+    private val jwtTokenUtil: JwtTokenUtil,
 ) {
 
     @PreAuthorize("isAuthenticated()")
     @PostMapping("/logout")
-    fun logout(): ResponseEntity<Any> {
-        val username = SecurityContextHolder.getContext().authentication.name
-        accountService.logoutAccount(username)
+    fun logout(request: HttpServletRequest): ResponseEntity<Any> {
+        val refreshToken = jwtTokenUtil.getRefreshToken(request)
+        accountService.logoutAccount(refreshToken)
         return ResponseEntity.ok().build()
     }
 
+    @PreAuthorize("isAuthenticated()")
     @GetMapping("/rotate")
     fun rotateToken(request: HttpServletRequest): ResponseEntity<JwtTokenResponse> {
         val refreshToken = JwtTokenUtil.extractToken(request.getHeader("refreshToken"))
             ?: throw IllegalArgumentException("refreshToken이 존재하지 않습니다.")
-
         return ResponseEntity.ok().body(accountService.rotateToken(refreshToken))
+    }
+
+    @PreAuthorize("isAuthenticated()")
+    @GetMapping("/me")
+    fun getMyAccount(): ResponseEntity<Any> {
+        val username = SecurityContextHolder.getContext().authentication.name
+        return ResponseEntity.ok().body(accountService.getMyAccount(username))
+    }
+
+    @PreAuthorize("isAuthenticated()")
+    @PatchMapping("/me")
+    fun updateMyAccount(): ResponseEntity<Any> {
+        val username = SecurityContextHolder.getContext().authentication.name
+        return ResponseEntity.ok().body(accountService.getMyAccount(username))
     }
 }

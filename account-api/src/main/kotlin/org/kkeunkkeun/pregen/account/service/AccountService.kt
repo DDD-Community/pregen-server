@@ -1,14 +1,13 @@
 package org.kkeunkkeun.pregen.account.service
 
-import lombok.RequiredArgsConstructor
 import org.kkeunkkeun.pregen.account.domain.Account
-import org.kkeunkkeun.pregen.account.domain.AccountRole
-import org.kkeunkkeun.pregen.account.domain.dto.AccountSaveRequest
+import org.kkeunkkeun.pregen.account.domain.dto.AccountResponse
 import org.kkeunkkeun.pregen.account.infrastructure.AccountRepository
 import org.kkeunkkeun.pregen.account.infrastructure.security.jwt.JwtTokenProvider
 import org.kkeunkkeun.pregen.account.infrastructure.security.jwt.JwtTokenResponse
 import org.kkeunkkeun.pregen.account.infrastructure.security.jwt.JwtTokenUtil
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder
+import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -24,18 +23,10 @@ class AccountService(
     private val authenticationManagerBuilder: AuthenticationManagerBuilder,
 ) {
 
-//    @Transactional
-//    fun joinAccount(request: AccountSaveRequest) {
-//        accountRepository.findByEmail(request.email)
-//            .ifPresent { throw IllegalArgumentException("이미 존재하는 이메일입니다.") }
-//
-//        Account.of(request, request.nickName ?: generatedNickName(), AccountRole.MEMBER)
-//            .let { entity ->
-//                accountRepository.save(entity)
-//            }
-//    }
-
     fun logoutAccount(refreshToken: String) {
+        if(SecurityContextHolder.getContext().authentication.principal.equals("anonymousUser")) {
+            throw IllegalArgumentException("로그인 상태가 아닙니다.")
+        }
         jwtTokenUtil.deleteRefreshToken(refreshToken)
     }
 
@@ -48,6 +39,26 @@ class AccountService(
         jwtTokenUtil.rotateRefreshToken(prevRefreshToken, jwtTokenResponse.refreshToken, authentication.name)
 
         return jwtTokenResponse
+    }
+
+    fun getMyAccount(username: String): AccountResponse {
+        val account = accountRepository.findByEmail(username).orElseThrow { IllegalArgumentException("존재하지 않는 계정입니다.") }
+        return AccountResponse(
+            email = account.email,
+            nickName = account.nickName,
+            socialProvider = account.socialProvider.value,
+        )
+    }
+
+    @Transactional
+    fun updateMyAccount(username: String, nickName: String): AccountResponse {
+        val account = accountRepository.findByEmail(username).orElseThrow { IllegalArgumentException("존재하지 않는 계정입니다.") }
+        account.updateNickName(nickName)
+        return AccountResponse(
+            email = account.email,
+            nickName = account.nickName,
+            socialProvider = account.socialProvider.value,
+        )
     }
 
     private fun generatedNickName(): String {
