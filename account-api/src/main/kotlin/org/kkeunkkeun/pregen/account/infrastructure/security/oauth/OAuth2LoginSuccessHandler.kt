@@ -5,7 +5,7 @@ import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
 import org.kkeunkkeun.pregen.account.domain.Account
 import org.kkeunkkeun.pregen.account.domain.AccountRole
-import org.kkeunkkeun.pregen.account.domain.SocialType
+import org.kkeunkkeun.pregen.account.domain.SocialProvider
 import org.kkeunkkeun.pregen.account.infrastructure.AccountRepository
 import org.kkeunkkeun.pregen.account.infrastructure.security.jwt.JwtTokenProvider
 import org.springframework.data.crossstore.ChangeSetPersister.NotFoundException
@@ -35,7 +35,7 @@ class OAuth2LoginSuccessHandler(
             val newAccount = Account(
                 email = email,
                 nickName = name,
-                socialType = SocialType.GOOGLE,
+                socialProvider = SocialProvider.GOOGLE,
                 role = AccountRole.MEMBER,
                 profileImg = picture,
             )

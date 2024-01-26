@@ -1,7 +1,6 @@
 package org.kkeunkkeun.pregen.account.domain
 
 import jakarta.persistence.*
-import org.kkeunkkeun.pregen.account.domain.dto.AccountSaveRequest
 import org.kkeunkkeun.pregen.common.domain.BaseEntity
 
 @Entity
@@ -15,7 +14,7 @@ class Account(
     var profileImg: String? = null,
 
     @Column(nullable = false)
-    val socialType: SocialType,
+    val socialProvider: SocialProvider,
 
     @Column(nullable = false)
     var role: AccountRole,
@@ -29,5 +28,9 @@ class Account(
         this.email = email
         this.nickName = nickName
         this.profileImg = profileImg
+    }
+
+    fun updateNickName(nickName: String) {
+        this.nickName = nickName
     }
 }
