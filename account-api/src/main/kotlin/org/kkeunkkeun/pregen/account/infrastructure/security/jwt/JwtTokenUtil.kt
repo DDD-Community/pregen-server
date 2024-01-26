@@ -1,5 +1,6 @@
 package org.kkeunkkeun.pregen.account.infrastructure.security.jwt
 
+import jakarta.servlet.http.HttpServletRequest
 import org.kkeunkkeun.pregen.common.infrastructure.RedisService
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Component
@@ -31,6 +32,11 @@ class JwtTokenUtil(
 
     fun setRefreshToken(refreshToken: String, email: String) {
         redisService.set(refreshToken, email, refreshExpirationTime, TimeUnit.MILLISECONDS)
+    }
+
+    fun getRefreshToken(request: HttpServletRequest): String {
+        val refreshToken = extractToken(redisService.get(request.getHeader("refreshToken")).toString())
+        return refreshToken ?: throw IllegalArgumentException("refreshToken이 존재하지 않습니다.")
     }
 
     fun deleteRefreshToken(refreshToken: String) {
