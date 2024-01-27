@@ -30,8 +30,7 @@ class OAuth2LoginSuccessHandler(
 
         val email = oAuthUser.attributes["email"] as? String ?: throw IllegalArgumentException("email이 존재하지 않습니다.")
         val findAccount = accountRepository.findByEmail(email)
-        val name = oAuthUser.attributes["nickName"] as? String ?: throw IllegalArgumentException("nickName이 존재하지 않습니다.")
-        val picture = oAuthUser.attributes["picture"] as? String ?: throw IllegalArgumentException("picture가 존재하지 않습니다.")
+        val name = oAuthUser.attributes["nickName"] as String
         val oauthToken = authentication as OAuth2AuthenticationToken
 
         val loginAccount = if (findAccount.isEmpty) {
@@ -41,13 +40,12 @@ class OAuth2LoginSuccessHandler(
                 nickName = name,
                 socialProvider = SocialProvider.isType(oauthToken.authorizedClientRegistrationId),
                 role = AccountRole.MEMBER,
-                profileImg = picture,
             )
             accountRepository.save(newAccount)
         } else {
             // 로그인을 시도했으며, 회원가입이 되어있는 경우
             val account = findAccount.orElseThrow { NotFoundException() }
-            account.generatedSocialAccount(email, name, picture) // 소셜 계정의 정보를 최신화
+            account.generatedSocialAccount(email, name) // 소셜 계정의 정보를 최신화
         }
 
         val jwtTokenResponse = jwtTokenProvider.createdJwtToken(loginAccount.email, loginAccount.role.value)
