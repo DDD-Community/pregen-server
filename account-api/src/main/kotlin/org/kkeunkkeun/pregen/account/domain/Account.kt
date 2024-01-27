@@ -11,8 +11,6 @@ class Account(
     @Column(nullable = false)
     var nickName: String,
 
-    var profileImg: String? = null,
-
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
     val socialProvider: SocialProvider,
@@ -26,10 +24,9 @@ class Account(
     val id: Long? = null,
 ): BaseEntity() {
 
-    fun generatedSocialAccount(email: String, nickName: String, profileImg: String): Account {
+    fun generatedSocialAccount(email: String, nickName: String): Account {
         this.email = email
         this.nickName = nickName
-        this.profileImg = profileImg
         return this
     }
 

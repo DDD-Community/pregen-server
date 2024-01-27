@@ -1,6 +1,8 @@
 package org.kkeunkkeun.pregen.account.presentation
 
 import jakarta.servlet.http.HttpServletRequest
+import jakarta.validation.Valid
+import org.kkeunkkeun.pregen.account.domain.dto.AccountUpdateRequest
 import org.kkeunkkeun.pregen.account.infrastructure.security.jwt.JwtTokenResponse
 import org.kkeunkkeun.pregen.account.infrastructure.security.jwt.JwtTokenUtil
 import org.kkeunkkeun.pregen.account.service.AccountService
@@ -43,8 +45,8 @@ class AccountController(
 
     @PreAuthorize("isAuthenticated()")
     @PatchMapping("/me")
-    fun updateMyAccount(): ResponseEntity<Any> {
+    fun updateMyAccount(@RequestBody @Valid request: AccountUpdateRequest): ResponseEntity<Any> {
         val username = SecurityContextHolder.getContext().authentication.name
-        return ResponseEntity.ok().body(accountService.getMyAccount(username))
+        return ResponseEntity.ok().body(accountService.updateMyAccount(username, request))
     }
 }

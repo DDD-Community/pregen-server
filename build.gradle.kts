@@ -49,6 +49,7 @@ subprojects {
         implementation("org.springframework.boot:spring-boot-starter-actuator")
         implementation("org.springframework.boot:spring-boot-starter-data-jpa")
         implementation("org.springframework.boot:spring-boot-starter-security")
+        implementation("org.springframework.boot:spring-boot-starter-validation")
 
         // kotlin
         implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
