@@ -8,6 +8,9 @@ data class AccountProperties @ConstructorBinding constructor(
     val jwt: JwtProperties
 ) {
 
+    val nameJson: String
+        get() = "account-api/src/main/resources/names/names.json"
+
     data class JwtProperties(
         val accessExpirationTime: Long,
         val refreshExpirationTime: Long,

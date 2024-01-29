@@ -2,6 +2,7 @@ package org.kkeunkkeun.pregen.account.infrastructure.security.oauth
 
 import org.kkeunkkeun.pregen.account.domain.AccountRole
 import org.kkeunkkeun.pregen.account.domain.dto.NickName
+import org.kkeunkkeun.pregen.account.infrastructure.config.AccountProperties
 import org.kkeunkkeun.pregen.common.infrastructure.RedisService
 import org.kkeunkkeun.pregen.common.service.JsonConvertor
 import org.springframework.security.core.authority.SimpleGrantedAuthority
@@ -17,6 +18,7 @@ import java.io.File
 class CustomOAuth2UserService(
     private val redisService: RedisService,
     private val jsonConvertor: JsonConvertor,
+    private val accountProperties: AccountProperties,
 ): OAuth2UserService<OAuth2UserRequest, OAuth2User> {
 
     @Override
@@ -43,7 +45,7 @@ class CustomOAuth2UserService(
     }
 
     private fun generatedNickName(jsonConvertor: JsonConvertor): String {
-        val jsonContent = File("account-api/src/main/resources/names/names.json").readText()
+        val jsonContent = File(accountProperties.nameJson).readText()
         val nickName = jsonConvertor.readValue(jsonContent, NickName::class.java)
         return "${nickName.first.random().name} ${nickName.last.random().name}"
     }
