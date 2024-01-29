@@ -1,18 +1,15 @@
 package org.kkeunkkeun.pregen.account.infrastructure.security.jwt
 
 import jakarta.servlet.http.HttpServletRequest
+import org.kkeunkkeun.pregen.account.infrastructure.config.AccountProperties
 import org.kkeunkkeun.pregen.common.infrastructure.RedisService
-import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Component
 import java.util.concurrent.TimeUnit
 
 @Component
 class JwtTokenUtil(
     private val redisService: RedisService,
-    @Value("\${custom.jwt.token.access-expiration-time}")
-    private var accessExpirationTime: Long,
-    @Value("\${custom.jwt.token.refresh-expiration-time}")
-    private var refreshExpirationTime: Long,
+    private val accountProperties: AccountProperties,
 ) {
 
     companion object {
@@ -29,11 +26,11 @@ class JwtTokenUtil(
 
     fun rotateRefreshToken(prevRefreshToken: String, newRefreshToken: String, email: String) {
         redisService.delete(prevRefreshToken)
-        redisService.set(newRefreshToken, email, refreshExpirationTime, TimeUnit.MILLISECONDS)
+        redisService.set(newRefreshToken, email, accountProperties.jwt.refreshExpirationTime, TimeUnit.MILLISECONDS)
     }
 
     fun setRefreshToken(refreshToken: String, email: String) {
-        redisService.set(refreshToken, email, refreshExpirationTime, TimeUnit.MILLISECONDS)
+        redisService.set(refreshToken, email, accountProperties.jwt.refreshExpirationTime, TimeUnit.MILLISECONDS)
     }
 
     fun getAccessToken(request: HttpServletRequest): String {
@@ -47,7 +44,7 @@ class JwtTokenUtil(
     }
 
     fun blockAccessToken(accessToken: String) {
-        redisService.set(accessToken, "BLOCKED", accessExpirationTime, TimeUnit.MILLISECONDS)
+        redisService.set(accessToken, "BLOCKED", accountProperties.jwt.accessExpirationTime, TimeUnit.MILLISECONDS)
     }
 
     fun deleteRefreshToken(refreshToken: String) {

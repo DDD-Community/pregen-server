@@ -7,8 +7,8 @@ import io.jsonwebtoken.Jwts
 import io.jsonwebtoken.SignatureAlgorithm
 import io.jsonwebtoken.io.Decoders
 import io.jsonwebtoken.security.Keys
+import org.kkeunkkeun.pregen.account.infrastructure.config.AccountProperties
 import org.kkeunkkeun.pregen.common.infrastructure.RedisService
-import org.springframework.beans.factory.annotation.Value
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
 import org.springframework.security.core.Authentication
 import org.springframework.security.core.GrantedAuthority
@@ -20,30 +20,26 @@ import java.util.Date
 
 @Component
 class JwtTokenProvider(
-    @Value("\${custom.jwt.token.access-expiration-time}")
-    private var accessExpirationTime: Long,
-    @Value("\${custom.jwt.token.refresh-expiration-time}")
-    private var refreshExpirationTime: Long,
-    @Value("\${custom.jwt.secret}") secretKey: String,
+    private val accountProperties: AccountProperties,
     private val jwtTokenUtil: JwtTokenUtil,
     private val redisService: RedisService,
 ) {
 
-    private val key = Keys.hmacShaKeyFor(Decoders.BASE64.decode(secretKey))
+    private val key = Keys.hmacShaKeyFor(Decoders.BASE64.decode(accountProperties.jwt.secret))
 
     fun createdJwtToken(username: String, authorities: String): JwtTokenResponse {
         val createdTime: Date = Date()
         val claims = Jwts.claims().setSubject(username)
         claims["roles"] = authorities
 
-        val accessToken: String = createdAccessToken(claims, Date(createdTime.time + accessExpirationTime))
-        val refreshToken: String = createdRefreshToken(claims, Date(createdTime.time + refreshExpirationTime))
+        val accessToken: String = createdAccessToken(claims, Date(createdTime.time + accountProperties.jwt.accessExpirationTime))
+        val refreshToken: String = createdRefreshToken(claims, Date(createdTime.time + accountProperties.jwt.refreshExpirationTime))
 
         return JwtTokenResponse(
                     accessToken = accessToken,
                     refreshToken = refreshToken,
                     tokenType = "Bearer",
-                    expiresIn = accessExpirationTime,
+                    expiresIn = accountProperties.jwt.accessExpirationTime,
                 )
     }
 

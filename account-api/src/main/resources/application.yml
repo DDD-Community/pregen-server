@@ -1,6 +1,18 @@
 spring:
   profiles:
-    include: crypto, oauth2, secret
+    include:
+      - common
+      - local
+      - crypto
+      - oauth2
+      - secret
+
+---
+
+spring:
+  config:
+    activate:
+      on-profile: local
   datasource:
     url: jdbc:h2:mem:dev
     username: sa
@@ -21,15 +33,10 @@ spring:
     property-naming-strategy: SNAKE_CASE
 
 custom:
-  redis:
-    host: localhost
-    port: 6379
   jwt:
-    secret: qwasdjhhajksdhiasgdjasdiuqwekdmnasdansbdkwe
-#    secret: ENC(mpeeRapq7w6gKKs4vxfw7GqJiqDz+/7x81U0yECpUinUZclGaYZ6WRJ+ZgXuMTb9ZIjZBtFnAnRJdhVEuH1lJA==)
-    token:
-      access-expiration-time: 300000 # 3분 ->  5 * 60 * 1000
-      refresh-expiration-time: 604800000 # 7일 -> 7 * 24 * 60 * 60 * 1000
+    secret: ENC(JuKgHEVRxF4KNsrDCA5DPs99AsOaLbkLSmqVGbm1En8ahwd/S9QV8I+SrqeYwhMcH4dvFsOgfP5ug0MYuxpo5A==)
+    access-expiration-time: 900000 # 15분 -> 15 * 60 * 1000
+    refresh-expiration-time: 1296000000 # 15일 -> 15 * 24 * 60 * 60 * 1000
 
 ---
 
@@ -42,26 +49,20 @@ spring:
       client:
         registration:
           kakao:
-            client-id: 573957cf9802ed95319715097946d9fa
-            client-secret: ovEA9xZK4s0hjxN1hQHJ6jiUnznseEvF
-#            client-id: ENC(HX5zlr1ZxSaw/uq99/UH08i8gRfXzqHT+E+n80V39hztnsXmA5Ulc2mmyk0mXUmK)
-#            client-secret: ENC(Cu3l+7WzuPd8PReb6pcObPFKw9BakzEJvmDO3bwqe9pdMpuPpYSUsl/2yqfTnSOV)
+            client-id: ENC(/NVz3t1aoMGO4L9F9MI017vxf8KcHfo3y/+xMWKfUAg1LcGiqMY6l0NvNXXPjKJC)
+            client-secret: ENC(+c7I7VG9cIym6iwPEnZKIzpkTVmhDB/SbHBy5RO2fGSse9r7pauDqfzRrSrvnmv1)
             redirect-uri: http://localhost:8080/login/oauth2/code/kakao
             client-authentication-method: client_secret_post
             authorization-grant-type: authorization_code
             client-name: kakao
             scope: account_email, profile_nickname
           google:
-            client-id: 760756338161-svhguhuhvamvshq1q5fo8cs4c3c8haef.apps.googleusercontent.com
-            client-secret: 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
-#            client-id: ENC(7vERj35mMHmIKeEsaIsy3u0NZH4LmUdTKSgakSRlZObdo4TPafSxTV/8Ef+yXRUW/4RTpaK6pvDggnJkzIaM28913xaYwBt6FMdlKKenZsuEEehazNSN6w==)
-#            client-secret: ENC(UgyFPoakfMpsJ2r92AUD/3ZNP4rIMUIL+i5/yeFKpRH2DbRQx4RgEgT3ny8JFmM/)
+            client-id: ENC(ExgiUVdDUXj0bZHGzdwfzdo+FL+oltvojYYmQUoUE3Xy5aBfvrc4H6H5j3AkVOcqCS3uZlTFl+QMBVacaLXRQP0Orp/UvVnVf3GJLm0mYue3YZ0leancXPDw/w/6QwQw)
+            client-secret: ENC(nOr263017o4m5RqiMKINIKOSUksOCtQ1rnVbaAuqUihdxV2x1lqUzUkMz2+aB5kP)
             scope: email, profile
           naver:
-            client-id: 5upx6R8TxdrOApbOHkq7
-            client-secret: fXkVV63acM
-#            client-id: ENC(03hDNDCgRZOrvQh9Mm2ETL+hYUKXnBjGIJId8oz9ymA=)
-#            client-secret: ENC(2w7/3KWbzbqwBKZLAyQfKMITJUdmI55j)
+            client-id: ENC(lPu7dZZ8/5Nw+58vtKCPkVqWFFOavr41eEQ4iTZHeAM=)
+            client-secret: ENC(C3vESb/5wp0oAS5Xv0+31pE002otp/aN)
             redirect-uri: http://localhost:8080/login/oauth2/code/naver
             clientAuthenticationMethod: client_secret_post
             authorization-grant-type: authorization_code

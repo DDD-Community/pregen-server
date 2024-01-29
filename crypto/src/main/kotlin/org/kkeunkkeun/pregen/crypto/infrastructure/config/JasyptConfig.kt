@@ -10,21 +10,17 @@ import org.springframework.context.annotation.Configuration
 @Configuration
 @EnableEncryptableProperties
 class JasyptConfig(
-    @Value("\${jasypt.encryptor.algorithm}") private val algorithm: String,
-    @Value("\${jasypt.encryptor.pool-size}") private val poolSize: Int,
-    @Value("\${jasypt.encryptor.string-output-type}") private val stringOutputType: String,
-    @Value("\${jasypt.encryptor.key-obtention-iterations}") private val keyObtentionIterations: Int,
-    @Value("\${jasypt.encryptor.password}") private val password: String
+    private val cryptoProperties: CryptoProperties,
 ) {
 
     @Bean
     fun jasyptStringEncryptor(): StringEncryptor {
         val encryptor = PooledPBEStringEncryptor()
-        encryptor.setPoolSize(poolSize)
-        encryptor.setAlgorithm(algorithm)
-        encryptor.setPassword(password)
-        encryptor.setStringOutputType(stringOutputType)
-        encryptor.setKeyObtentionIterations(keyObtentionIterations)
+        encryptor.setPoolSize(cryptoProperties.poolSize)
+        encryptor.setAlgorithm(cryptoProperties.algorithm)
+        encryptor.setPassword(cryptoProperties.password)
+        encryptor.setStringOutputType(cryptoProperties.stringOutputType)
+        encryptor.setKeyObtentionIterations(cryptoProperties.keyObtentionIterations)
         return encryptor
     }
 }

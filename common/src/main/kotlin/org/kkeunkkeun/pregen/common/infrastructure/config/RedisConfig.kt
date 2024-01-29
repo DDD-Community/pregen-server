@@ -1,6 +1,5 @@
 package org.kkeunkkeun.pregen.common.infrastructure.config
 
-import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.data.redis.connection.RedisStandaloneConfiguration
@@ -11,17 +10,14 @@ import org.springframework.data.redis.serializer.StringRedisSerializer
 
 @Configuration
 class RedisConfig(
-    @Value("\${custom.redis.host}")
-    private val redisHost: String,
-    @Value("\${custom.redis.port}")
-    private val redisPort: Int,
+    private val commonProperties: CommonProperties,
 ) {
 
     @Bean
     fun redisConnectionFactory(): LettuceConnectionFactory {
         RedisStandaloneConfiguration().let { config ->
-            config.hostName = redisHost
-            config.port = redisPort
+            config.hostName = commonProperties.redis.host
+            config.port = commonProperties.redis.port
             return LettuceConnectionFactory(config)
         }
     }
