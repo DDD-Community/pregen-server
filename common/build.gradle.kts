@@ -1,6 +1,8 @@
 import org.springframework.boot.gradle.tasks.bundling.BootJar
 
 dependencies {	// (1)
+
+    implementation("org.springframework.boot:spring-boot-starter-data-redis")
 }
 
 // (2)
