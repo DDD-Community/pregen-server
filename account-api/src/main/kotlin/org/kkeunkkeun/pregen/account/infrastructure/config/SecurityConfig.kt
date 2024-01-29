@@ -27,7 +27,9 @@ class SecurityConfig(
             .httpBasic { httpBasic -> httpBasic.disable() }
             .csrf { csrf -> csrf.disable() }
             .authorizeHttpRequests {
-                auth -> auth.anyRequest().permitAll()
+                auth -> auth
+                    .requestMatchers("/accounts/**").authenticated()
+                    .anyRequest().authenticated()
             }
             .headers {
                 headers -> headers.addHeaderWriter(

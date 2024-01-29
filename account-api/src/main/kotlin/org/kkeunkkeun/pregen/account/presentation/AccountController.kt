@@ -18,7 +18,6 @@ class AccountController(
     private val jwtTokenUtil: JwtTokenUtil,
 ) {
 
-    @PreAuthorize("isAuthenticated()")
     @PostMapping("/logout")
     fun logout(request: HttpServletRequest): ResponseEntity<Any> {
         val accessToken = jwtTokenUtil.getAccessToken(request)
@@ -28,7 +27,6 @@ class AccountController(
         return ResponseEntity.ok().build()
     }
 
-    @PreAuthorize("isAuthenticated()")
     @GetMapping("/rotate")
     fun rotateToken(request: HttpServletRequest): ResponseEntity<JwtTokenResponse> {
         val refreshToken = JwtTokenUtil.extractToken(request.getHeader("refreshToken"))
@@ -36,14 +34,12 @@ class AccountController(
         return ResponseEntity.ok().body(accountService.reIssueTokens(refreshToken))
     }
 
-    @PreAuthorize("isAuthenticated()")
     @GetMapping("/me")
     fun getMyAccount(): ResponseEntity<Any> {
         val username = SecurityContextHolder.getContext().authentication.name
         return ResponseEntity.ok().body(accountService.getMyAccount(username))
     }
 
-    @PreAuthorize("isAuthenticated()")
     @PatchMapping("/me")
     fun updateMyAccount(@RequestBody @Valid request: AccountUpdateRequest): ResponseEntity<Any> {
         val username = SecurityContextHolder.getContext().authentication.name
