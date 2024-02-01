@@ -1,0 +1,8 @@
+jasypt:
+  encryptor:
+    bean: jasyptStringEncryptor
+    algorithm: ${secret.jasypt.algorithm}
+    pool-size: 2
+    string-output-type: base64
+    key-obtention-iterations: 100000
+    password: ${secret.jasypt.password}

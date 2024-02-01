@@ -38,3 +38,6 @@ out/
 
 ### CUSTOM ###
 .DS_Store
+
+### OTHERS ###
+application-secret.yml
