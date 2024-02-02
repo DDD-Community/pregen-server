@@ -1,5 +1,6 @@
 package org.kkeunkkeun.pregen.account.infrastructure.config
 
+import org.kkeunkkeun.pregen.account.infrastructure.security.jwt.JwtAuthFilter
 import org.kkeunkkeun.pregen.account.infrastructure.security.oauth.CustomOAuth2UserService
 import org.kkeunkkeun.pregen.account.infrastructure.security.oauth.OAuth2LoginFailureHandler
 import org.kkeunkkeun.pregen.account.infrastructure.security.oauth.OAuth2LoginSuccessHandler
@@ -10,11 +11,13 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.crypto.factory.PasswordEncoderFactories
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.security.web.SecurityFilterChain
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter
 import org.springframework.security.web.header.writers.frameoptions.XFrameOptionsHeaderWriter
 
 @Configuration
 @EnableWebSecurity
 class SecurityConfig(
+    private val jwtAuthFilter: JwtAuthFilter,
     private val customOAuth2UserService: CustomOAuth2UserService,
     private val oAuth2LoginSuccessHandler: OAuth2LoginSuccessHandler,
     private val oAuth2LoginFailureHandler: OAuth2LoginFailureHandler
@@ -22,14 +25,14 @@ class SecurityConfig(
 
     @Bean
     fun filterChain(http: HttpSecurity): SecurityFilterChain {
-        return http
+        http
             .formLogin { formLogin -> formLogin.disable()}
             .httpBasic { httpBasic -> httpBasic.disable() }
             .csrf { csrf -> csrf.disable() }
             .authorizeHttpRequests {
                 auth -> auth
                     .requestMatchers("/accounts/**").authenticated()
-                    .anyRequest().authenticated()
+                    .anyRequest().permitAll()
             }
             .headers {
                 headers -> headers.addHeaderWriter(
@@ -45,7 +48,8 @@ class SecurityConfig(
                     .successHandler(oAuth2LoginSuccessHandler)
                     .failureHandler(oAuth2LoginFailureHandler)
             }
-            .build()
+
+        return http.addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter::class.java).build()
     }
 
     @Bean

@@ -5,7 +5,7 @@ import org.kkeunkkeun.pregen.common.domain.BaseEntity
 
 @Entity
 class Account(
-    @Column(nullable = false)
+    @Column(nullable = false, unique = true)
     var email: String,
 
     @Column(nullable = false)

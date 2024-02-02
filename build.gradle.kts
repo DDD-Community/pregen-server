@@ -67,6 +67,9 @@ subprojects {
         // test
         testImplementation("org.springframework.boot:spring-boot-starter-test")
         testImplementation("org.springframework.security:spring-security-test")
+
+        // redis
+        implementation("org.springframework.boot:spring-boot-starter-data-redis")
     }
 
     tasks.getByName("bootJar") {
