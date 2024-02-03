@@ -12,8 +12,8 @@ class RedisService(
 
     @PostConstruct
     fun initialize() {
-        redisTemplate.keys("*").forEach { key ->
-            redisTemplate.delete(key)
+        redisTemplate.keys("*").let {
+            redisTemplate.delete(it)
         }
     }
 
