@@ -2,7 +2,6 @@ package org.kkeunkkeun.pregen.account.infrastructure.security.oauth
 
 import org.kkeunkkeun.pregen.account.domain.AccountRole
 import org.kkeunkkeun.pregen.account.service.AccountService
-import org.kkeunkkeun.pregen.common.infrastructure.RedisService
 import org.springframework.security.core.authority.SimpleGrantedAuthority
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest
@@ -13,7 +12,6 @@ import org.springframework.stereotype.Service
 
 @Service
 class CustomOAuth2UserService(
-    private val redisService: RedisService,
     private val accountService: AccountService,
 ): OAuth2UserService<OAuth2UserRequest, OAuth2User> {
 
@@ -31,6 +29,7 @@ class CustomOAuth2UserService(
         val memberAttribute: MutableMap<String, Any> = oAuth2Attribute.convertToMap().toMutableMap()
         val email = memberAttribute["email"] as String
         val findAccount = accountService.findByEmail(email)
+        memberAttribute["accessToken"] = userRequest.accessToken.tokenValue
 
         findAccount ?: run {
             memberAttribute["exist"] = false
