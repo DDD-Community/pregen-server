@@ -2,6 +2,7 @@ package org.kkeunkkeun.pregen.common.infrastructure.config
 
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
+import org.springframework.data.redis.connection.RedisPassword
 import org.springframework.data.redis.connection.RedisStandaloneConfiguration
 import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory
 import org.springframework.data.redis.core.RedisTemplate
@@ -18,6 +19,7 @@ class RedisConfig(
         RedisStandaloneConfiguration().let { config ->
             config.hostName = commonProperties.redis.host
             config.port = commonProperties.redis.port
+            config.password = RedisPassword.of(commonProperties.redis.password)
             return LettuceConnectionFactory(config)
         }
     }
