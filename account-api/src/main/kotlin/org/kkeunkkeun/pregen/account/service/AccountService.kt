@@ -7,7 +7,7 @@ import org.kkeunkkeun.pregen.account.domain.SocialProvider
 import org.kkeunkkeun.pregen.account.domain.dto.AccountResponse
 import org.kkeunkkeun.pregen.account.domain.dto.AccountUpdateRequest
 import org.kkeunkkeun.pregen.account.domain.dto.NickName
-import org.kkeunkkeun.pregen.account.infrastructure.AccountRepository
+import org.kkeunkkeun.pregen.account.infrastructure.AccountJpaRepository
 import org.kkeunkkeun.pregen.account.infrastructure.config.AccountProperties
 import org.kkeunkkeun.pregen.account.infrastructure.security.jwt.JwtTokenUtil
 import org.kkeunkkeun.pregen.account.infrastructure.security.jwt.dto.JwtTokenResponse
@@ -21,7 +21,7 @@ import java.io.File
 @Transactional(readOnly = true)
 @Service
 class AccountService(
-    private val accountRepository: AccountRepository,
+    private val accountJpaRepository: AccountJpaRepository,
     private val refreshTokenRepository: RefreshTokenRepository,
     private val jwtTokenUtil: JwtTokenUtil,
     private val jsonConvertor: JsonConvertor,
@@ -36,7 +36,7 @@ class AccountService(
             socialProvider = SocialProvider.isType(provider),
             role = AccountRole.isType(role)
         )
-        return accountRepository.save(account)
+        return accountJpaRepository.save(account)
     }
 
     @Transactional
@@ -61,7 +61,7 @@ class AccountService(
     }
 
     fun getMyAccount(email: String): AccountResponse {
-        val account = accountRepository.findByEmail(email) ?: throw IllegalArgumentException("존재하지 않는 계정입니다.")
+        val account = accountJpaRepository.findByEmail(email) ?: throw IllegalArgumentException("존재하지 않는 계정입니다.")
         return AccountResponse(
             email = account.email,
             nickName = account.nickName,
@@ -71,7 +71,7 @@ class AccountService(
 
     @Transactional
     fun updateMyAccount(email: String, request: AccountUpdateRequest): AccountResponse {
-        val account = accountRepository.findByEmail(email) ?: throw IllegalArgumentException("존재하지 않는 계정입니다.")
+        val account = accountJpaRepository.findByEmail(email) ?: throw IllegalArgumentException("존재하지 않는 계정입니다.")
         account.updateNickName(request.nickName)
         return AccountResponse(
             email = account.email,
@@ -81,7 +81,7 @@ class AccountService(
     }
 
     fun findByEmail(email: String): Account? {
-        return accountRepository.findByEmail(email)
+        return accountJpaRepository.findByEmail(email)
     }
 
     fun generatedNickName(): String {

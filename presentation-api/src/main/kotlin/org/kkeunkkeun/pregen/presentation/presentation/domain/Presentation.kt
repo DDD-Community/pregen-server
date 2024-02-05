@@ -3,6 +3,8 @@ package org.kkeunkkeun.pregen.presentation.presentation.domain
 import jakarta.persistence.*
 import jakarta.persistence.EnumType.STRING
 import org.kkeunkkeun.pregen.common.domain.BaseTimeEntity
+import org.kkeunkkeun.pregen.presentation.presentation.domain.PresentationStatus.DELETED
+import org.kkeunkkeun.pregen.presentation.presentation.domain.PresentationStatus.NORMAL
 import org.kkeunkkeun.pregen.presentation.presentation.presentation.PresentationRequest
 import java.time.LocalDate
 import java.time.temporal.ChronoUnit
@@ -10,49 +12,78 @@ import java.time.temporal.ChronoUnit
 @Entity
 class Presentation(
 
+    val accountId: Long,
+
+    title: String,
+
+    deadlineDate: LocalDate,
+
+    timeLimit: Int,
+
+    alertBeforeLimit: Boolean,
+): BaseTimeEntity() {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "presentation_id")
-    val id: Long? = null,
+    val id: Long? = null
 
-    val memberId: Long,
+    var title: String = title
+        protected set
 
-    val title: String,
+    var deadlineDate: LocalDate = deadlineDate
+        protected set
 
-    val deadlineDate: LocalDate,
+    var timeLimit: Int = timeLimit
+        protected set
 
-    val includeDeadlineDate: Boolean,
-
-    val timeLimit: Int,
-
-    val alertBeforeLimit: Boolean,
+    var alertBeforeLimit: Boolean = alertBeforeLimit
+        protected set
 
     @Enumerated(STRING)
     @Column(length = 30)
-    val status: PresentationStatus
-
-): BaseTimeEntity() {
+    var status: PresentationStatus = NORMAL
+        protected set
 
     companion object {
-        fun from(memberId: Long, presentationRequest: PresentationRequest): Presentation {
-            return Presentation(null, memberId, presentationRequest.title, presentationRequest.deadlineDate,
-                presentationRequest.includeDeadlineDate, presentationRequest.timeLimit, presentationRequest.alertBeforeLimit,
-                PresentationStatus.NORMAL)
+        fun from(accountId: Long, presentationRequest: PresentationRequest): Presentation {
+            return Presentation(accountId, presentationRequest.title, presentationRequest.deadlineDate,
+                presentationRequest.timeLimit, presentationRequest.alertBeforeLimit)
         }
     }
 
     fun getDDay(): Int {
         val today = LocalDate.now()
-        var dDay = ChronoUnit.DAYS.between(today, deadlineDate)
-
-        if (includeDeadlineDate) {
-            dDay += 1
-        }
+        val dDay = ChronoUnit.DAYS.between(today, deadlineDate)
 
         return dDay.toInt()
     }
 
     fun getTimeLimitAsMinute(): Int {
         return timeLimit / 60
+    }
+
+    fun isNotOwnerOfPresentation(accountId: Long): Boolean {
+        return accountId != this.accountId
+    }
+
+    fun checkDeleted() {
+        if (this.status == DELETED) {
+            throw IllegalStateException("This presentation is deleted.")
+        }
+    }
+
+    fun update(title: String, deadlineDate: LocalDate, timeLimit: Int, alertBeforeLimit: Boolean) {
+        this.title = title
+        this.deadlineDate = deadlineDate
+        this.timeLimit = timeLimit
+        this.alertBeforeLimit = alertBeforeLimit
+    }
+
+    fun delete() {
+        if (this.status == DELETED) {
+            throw IllegalStateException(String.format("Presentation id = %d that has already been deleted.", this.id))
+        }
+        this.status = DELETED
     }
 }

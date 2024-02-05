@@ -1,37 +1,68 @@
 package org.kkeunkkeun.pregen.presentation.presentation.service
 
+import org.kkeunkkeun.pregen.account.service.AccountRepository
 import org.kkeunkkeun.pregen.presentation.presentation.domain.Presentation
 import org.kkeunkkeun.pregen.presentation.presentation.presentation.PresentationListResponse
 import org.kkeunkkeun.pregen.presentation.presentation.presentation.PresentationRequest
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Service
-import java.lang.RuntimeException
+import org.springframework.transaction.annotation.Transactional
 
 @Service
+@Transactional(readOnly = true)
 class PresentationService(
-    private val presentationRepository: PresentationRepository
+    private val presentationRepository: PresentationRepository,
+    private val accountRepository: AccountRepository,
+    private val presentationAccessChecker: PresentationAccessChecker,
 ) {
 
-    fun findListByMemberId(memberId: Long, pageable: Pageable): Page<PresentationListResponse.ListItem> {
-        return presentationRepository.findByMemberId(memberId, pageable) // TODO: memberId 추가
+    fun findListByAccountId(email: String, pageable: Pageable): Page<PresentationListResponse.ListItem> {
+        val accountId = accountRepository.findIdByEmail(email)
+            ?: throw RuntimeException()
+
+        return presentationRepository.findByAccountId(accountId, pageable)
             .map { presentation -> generateListItem(presentation) }
     }
 
-    fun generateListItem(presentation: Presentation): PresentationListResponse.ListItem {
-        return PresentationListResponse.ListItem.from(presentation)
+    fun findById(email: String, id: Long): Presentation {
+        val presentation = presentationRepository.findByIdOrNull(id)
+            ?: throw RuntimeException()
+        presentationAccessChecker.checkAccess(presentation, email)
+
+        return presentation
     }
 
-//    fun findById(id: Long): Presentation {
-//        return presentationRepository.findByIdOrNull(id)
-//            ?: throw RuntimeException()
-//    }
-
-    fun save(memberId: Long, request: PresentationRequest): Long {
-        val presentation = Presentation.from(memberId, request)
+    @Transactional
+    fun save(email: String, request: PresentationRequest): Presentation {
+        val accountId = accountRepository.findIdByEmail(email)
+            ?: throw RuntimeException()
+        val presentation = Presentation.from(accountId, request)
 
         presentationRepository.save(presentation)
 
-        return presentation.id ?: throw RuntimeException() // TODO
+        return presentation
+    }
+
+    @Transactional
+    fun update(email: String, presentationId: Long, request: PresentationRequest): Long {
+        val presentation = this.findById(email, presentationId)
+        presentation.update(request.title, request.deadlineDate, request.timeLimit, request.alertBeforeLimit)
+
+        return presentation.id!!
+    }
+
+    @Transactional
+    fun deleteByIds(email: String, presentationIds: List<Long>) {
+        presentationIds.forEach { id -> this.deleteById(email, id) }
+    }
+
+    private fun deleteById(email: String, presentationId: Long) {
+        this.findById(email, presentationId)
+            .delete()
+    }
+
+    private fun generateListItem(presentation: Presentation): PresentationListResponse.ListItem {
+        return PresentationListResponse.ListItem.from(presentation)
     }
 }

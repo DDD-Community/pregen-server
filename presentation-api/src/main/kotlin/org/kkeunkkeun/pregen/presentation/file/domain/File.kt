@@ -21,4 +21,8 @@ class File(
     val originalName: String,
 
     val generatedName: String
-)
+) {
+    fun absolutePath(): String {
+        return String.format("%s/%s", path, generatedName)
+    }
+}

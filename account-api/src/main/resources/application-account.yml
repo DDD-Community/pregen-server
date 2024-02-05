@@ -1,18 +1,11 @@
 spring:
-  profiles:
-    include:
-      - common
-      - local
-      - crypto
-      - oauth2
-      - secret
-
----
-
-spring:
   config:
     activate:
       on-profile: local
+  security:
+    user:
+      name: admin
+      password: admin
   datasource:
     url: jdbc:h2:mem:dev
     username: sa
@@ -29,8 +22,6 @@ spring:
       hibernate:
         format_sql: true
         use_sql_comments: true
-  jackson:
-    property-naming-strategy: SNAKE_CASE
 
 custom:
   jwt:

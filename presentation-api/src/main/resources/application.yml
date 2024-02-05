@@ -4,6 +4,10 @@ spring:
     group:
       local:
         - common
+        - account
+        - crypto
+        - oauth2
+        - secret
       prod:
         - common
 

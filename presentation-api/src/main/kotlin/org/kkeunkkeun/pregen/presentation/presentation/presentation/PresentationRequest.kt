@@ -13,23 +13,28 @@ data class PresentationRequest(
     @field:FutureOrPresent
     val deadlineDate: LocalDate,
 
-    @field:NotNull
-    val includeDeadlineDate: Boolean,
-
-    @field:Min(0)
+    @field:Min(1)
     val timeLimit: Int,
 
     @field:NotNull
     val alertBeforeLimit: Boolean,
 
-    @field:NotNull
+    @field:Size(min = 1)
     val slides: List<SlideRequest>,
 ) {
 
     data class SlideRequest(
         val imageFileId: Long? = null,
 
-        @field:Size(min = 0, max = 50000)
-        val script: String,
+        @field:Size(min = 0, max = 5000)
+        val script: String = "",
+
+        @field:Size(min = 0, max = 500)
+        val memo: String = "",
+    )
+
+    data class Delete(
+        @field:NotNull
+        val presentationIds: List<Long>
     )
 }

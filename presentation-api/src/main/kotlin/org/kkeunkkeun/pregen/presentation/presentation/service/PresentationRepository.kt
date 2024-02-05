@@ -6,6 +6,7 @@ import org.springframework.data.domain.Pageable
 
 interface PresentationRepository {
 
-    fun findByMemberId(memberId: Long, pageable: Pageable): Page<Presentation>
+    fun findByAccountId(accountId: Long, pageable: Pageable): Page<Presentation>
+    fun findByIdOrNull(id: Long): Presentation?
     fun save(presentation: Presentation)
 }

@@ -10,13 +10,6 @@ class RedisService(
     private val redisTemplate: RedisTemplate<String, Any>,
 ) {
 
-    @PostConstruct
-    fun initialize() {
-        redisTemplate.keys("*").let {
-            redisTemplate.delete(it)
-        }
-    }
-
     fun set(key: String, value: Any, expiration: Long, timeUnit: TimeUnit) {
         redisTemplate.opsForValue().set(key, value, expiration, timeUnit)
     }
