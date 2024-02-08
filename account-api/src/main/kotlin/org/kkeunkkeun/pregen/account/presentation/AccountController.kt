@@ -27,6 +27,12 @@ class AccountController(
         return ResponseEntity.ok().body(accountService.reIssueToken(request))
     }
 
+    @GetMapping("/revoke")
+    fun revokeToken(request: HttpServletRequest): ResponseEntity<Unit> {
+        accountService.revokeAccount(request)
+        return ResponseEntity.ok().build()
+    }
+
     @GetMapping("/me")
     fun getMyAccount(): ResponseEntity<Any> {
         val email = SecurityContextHolder.getContext().authentication.name

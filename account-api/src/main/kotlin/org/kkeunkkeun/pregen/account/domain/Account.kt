@@ -13,24 +13,29 @@ class Account(
 
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
-    val socialProvider: SocialProvider,
+    var socialProvider: SocialProvider,
 
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
     var role: AccountRole,
+
+    @Column(nullable = false)
+    var socialAccessToken: String,
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     val id: Long? = null,
 ): BaseEntity() {
 
-    fun generatedSocialAccount(email: String, nickName: String): Account {
+    fun updateEmail(email: String) {
         this.email = email
-        this.nickName = nickName
-        return this
     }
 
     fun updateNickName(nickName: String) {
         this.nickName = nickName
+    }
+
+    fun updateAccessToken(accessToken: String) {
+        this.socialAccessToken = accessToken
     }
 }
