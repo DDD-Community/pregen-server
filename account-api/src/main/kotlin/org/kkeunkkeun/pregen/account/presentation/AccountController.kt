@@ -1,12 +1,13 @@
 package org.kkeunkkeun.pregen.account.presentation
 
 import jakarta.servlet.http.HttpServletRequest
+import jakarta.servlet.http.HttpServletResponse
 import jakarta.validation.Valid
 import org.kkeunkkeun.pregen.account.domain.dto.AccountResponse
 import org.kkeunkkeun.pregen.account.domain.dto.AccountUpdateRequest
-import org.kkeunkkeun.pregen.account.infrastructure.security.jwt.dto.JwtTokenResponse
 import org.kkeunkkeun.pregen.account.service.AccountService
 import org.springframework.http.ResponseEntity
+import org.springframework.security.core.Authentication
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.web.bind.annotation.*
 
@@ -16,20 +17,27 @@ class AccountController(
     private val accountService: AccountService,
 ) {
 
+    @PostMapping("/login")
+    fun login(response: HttpServletResponse, authentication: Authentication): ResponseEntity<HttpServletResponse> {
+        return ResponseEntity.ok().body(accountService.loginAccount(response, authentication))
+    }
+
     @PostMapping("/logout")
     fun logout(request: HttpServletRequest): ResponseEntity<Unit> {
-        accountService.logoutAccount(request)
+        val authentication = SecurityContextHolder.getContext().authentication
+        accountService.logoutAccount(request, authentication)
         return ResponseEntity.ok().build()
     }
 
     @GetMapping("/reissue")
-    fun reissueToken(request: HttpServletRequest): ResponseEntity<JwtTokenResponse> {
-        return ResponseEntity.ok().body(accountService.reIssueToken(request))
+    fun reissueToken(request: HttpServletRequest, response: HttpServletResponse): ResponseEntity<HttpServletResponse> {
+        return ResponseEntity.ok().body(accountService.reIssueToken(request, response))
     }
 
     @GetMapping("/revoke")
     fun revokeToken(request: HttpServletRequest): ResponseEntity<Unit> {
-        accountService.revokeAccount(request)
+        val email = SecurityContextHolder.getContext().authentication.name
+        accountService.revokeAccount(request, email)
         return ResponseEntity.ok().build()
     }
 

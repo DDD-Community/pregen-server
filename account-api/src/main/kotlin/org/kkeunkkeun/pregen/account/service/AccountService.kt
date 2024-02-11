@@ -1,6 +1,7 @@
 package org.kkeunkkeun.pregen.account.service
 
 import jakarta.servlet.http.HttpServletRequest
+import jakarta.servlet.http.HttpServletResponse
 import org.kkeunkkeun.pregen.account.domain.Account
 import org.kkeunkkeun.pregen.account.domain.AccountRole
 import org.kkeunkkeun.pregen.account.domain.SocialProvider
@@ -11,15 +12,14 @@ import org.kkeunkkeun.pregen.account.infrastructure.AccountRepository
 import org.kkeunkkeun.pregen.account.infrastructure.config.AccountProperties
 import org.kkeunkkeun.pregen.account.infrastructure.config.SocialClientProperties
 import org.kkeunkkeun.pregen.account.infrastructure.security.jwt.JwtTokenUtil
-import org.kkeunkkeun.pregen.account.infrastructure.security.jwt.dto.JwtTokenResponse
-import org.kkeunkkeun.pregen.account.infrastructure.security.jwt.refreshtoken.RefreshTokenRepository
+import org.kkeunkkeun.pregen.account.infrastructure.security.jwt.refreshtoken.RefreshTokenService
 import org.kkeunkkeun.pregen.common.service.JsonConvertor
 import org.springframework.http.HttpEntity
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpMethod
 import org.springframework.http.MediaType
-import org.springframework.security.core.context.SecurityContext
-import org.springframework.security.core.context.SecurityContextHolder
+import org.springframework.security.core.Authentication
+import org.springframework.security.oauth2.core.user.OAuth2User
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.client.RestTemplate
@@ -29,7 +29,7 @@ import java.io.File
 @Service
 class AccountService(
     private val accountRepository: AccountRepository,
-    private val refreshTokenRepository: RefreshTokenRepository,
+    private val refreshTokenService: RefreshTokenService,
 
     private val jwtTokenUtil: JwtTokenUtil,
     private val restTemplate: RestTemplate,
@@ -52,35 +52,75 @@ class AccountService(
     }
 
     @Transactional
-    fun logoutAccount(request: HttpServletRequest) {
-        if(SecurityContextHolder.getContext().authentication.principal.equals("anonymousUser")) {
-            throw IllegalArgumentException("로그인 상태가 아닙니다.")
+    fun loginAccount(response: HttpServletResponse, authentication: Authentication): HttpServletResponse {
+        val oAuthUser: OAuth2User = authentication.principal as OAuth2User
+
+        val email = oAuthUser.attributes["email"] as? String ?: throw IllegalArgumentException("email이 존재하지 않습니다.")
+        val provider = oAuthUser.attributes["provider"] as? String ?: throw IllegalArgumentException("provider가 존재하지 않습니다.")
+        val isExist: Boolean = oAuthUser.attributes["exist"] as? Boolean ?: throw IllegalArgumentException("exist가 존재하지 않습니다.")
+        val accessToken = oAuthUser.attributes["accessToken"] as? String ?: throw IllegalArgumentException("accessToken이 존재하지 않습니다.")
+        val nickName = oAuthUser.attributes["nickName"] as? String ?: generatedNickName()
+        val role = oAuthUser.authorities.stream().findFirst().orElseThrow { throw IllegalArgumentException() }.authority
+
+        if (isExist) {
+            val account = accountRepository.findByEmail(email) ?: throw IllegalArgumentException("존재하지 않는 계정입니다.")
+            account.updateAccessToken(accessToken)
+            account.updateEmail(email)
+            refreshTokenService.deleteById(email)
+
+            val jwtToken = jwtTokenUtil.generateToken(account.email, account.role.value)
+            val accessTokenCookie = jwtTokenUtil.generateTokenCookie("accessToken", jwtToken.accessToken)
+            val refreshTokenCookie = jwtTokenUtil.generateTokenCookie("refreshToken", jwtToken.refreshToken)
+
+            response.addCookie(accessTokenCookie)
+            response.addCookie(refreshTokenCookie)
+            response.sendRedirect("/")
+        } else {
+            val account = signUp(email, nickName, provider, role, accessToken)
+            val jwtToken = jwtTokenUtil.generateToken(account.email, account.role.value)
+            val accessTokenCookie = jwtTokenUtil.generateTokenCookie("accessToken", jwtToken.accessToken)
+            val refreshTokenCookie = jwtTokenUtil.generateTokenCookie("refreshToken", jwtToken.refreshToken)
+
+            response.addCookie(accessTokenCookie)
+            response.addCookie(refreshTokenCookie)
+            response.sendRedirect("/")
         }
-        val accessToken = jwtTokenUtil.extractToken(request.getHeader("Authorization"))
-            ?: throw IllegalArgumentException("accessToken이 존재하지 않습니다.")
-        refreshTokenRepository.deleteById(accessToken)
+
+        return response
     }
 
     @Transactional
-    fun reIssueToken(request: HttpServletRequest): JwtTokenResponse {
-        val refreshToken = jwtTokenUtil.extractToken(request.getHeader("Authorization"))
-            ?: throw IllegalArgumentException("refreshToken이 존재하지 않습니다.")
+    fun logoutAccount(request: HttpServletRequest, authentication: Authentication) {
+        if(authentication.principal.equals("anonymousUser")) {
+            throw IllegalArgumentException("로그인 상태가 아닙니다.")
+        }
+        val accessToken = jwtTokenUtil.getTokenFromCookie("accessToken", request)
+        refreshTokenService.deleteById(authentication.name)
+    }
+
+    @Transactional
+    fun reIssueToken(request: HttpServletRequest, response: HttpServletResponse): HttpServletResponse {
+        val refreshToken = jwtTokenUtil.getTokenFromCookie("refreshToken", request)
         jwtTokenUtil.verifyToken(refreshToken)
         val authentication = jwtTokenUtil.getAuthentication(refreshToken)
         val authorities = authentication.authorities.joinToString(",") { it.authority }
 
-        return jwtTokenUtil.generateToken(authentication.name, authorities)
+        val jwtToken = jwtTokenUtil.generateToken(authentication.name, authorities)
+        val accessTokenCookie = jwtTokenUtil.generateTokenCookie("accessToken", jwtToken.accessToken)
+        val refreshTokenCookie = jwtTokenUtil.generateTokenCookie("refreshToken", jwtToken.refreshToken)
+
+        response.addCookie(accessTokenCookie)
+        response.addCookie(refreshTokenCookie)
+        return response
     }
 
-    @Transactional
-    fun revokeAccount(request: HttpServletRequest) {
-        val accessToken = jwtTokenUtil.extractToken(request.getHeader("Authorization"))
-            ?: throw IllegalArgumentException("accessToken 존재하지 않습니다.")
+    fun revokeAccount(request: HttpServletRequest, email: String) {
+        val accessToken = jwtTokenUtil.getTokenFromCookie("accessToken", request)
         jwtTokenUtil.verifyToken(accessToken)
-
-        val email = SecurityContextHolder.getContext().authentication.name
         val account = accountRepository.findByEmail(email) ?: throw IllegalArgumentException("존재하지 않는 계정입니다.")
         sendRevokeRequest(account.socialAccessToken, account.socialProvider)
+        deleteMyAccount(account)
+        refreshTokenService.deleteById(email)
     }
 
 
@@ -102,6 +142,21 @@ class AccountService(
             nickName = account.nickName,
             socialProvider = account.socialProvider.value,
         )
+    }
+
+    @Transactional
+    fun deleteMyAccount(account: Account) {
+        accountRepository.delete(account)
+    }
+
+    fun findByEmail(email: String): Account? {
+        return accountRepository.findByEmail(email)
+    }
+
+    fun generatedNickName(): String {
+        val jsonContent = File(accountProperties.nameJson).readText()
+        val nickName = jsonConvertor.readValue(jsonContent, NickName::class.java)
+        return "${nickName.first.random().name} ${nickName.last.random().name}"
     }
 
     private fun sendRevokeRequest(accessToken: String, provider: SocialProvider) {
@@ -126,15 +181,5 @@ class AccountService(
         if (!response.statusCode.is2xxSuccessful) {
             throw IllegalArgumentException("회원 탈퇴에 실패하였습니다. 다시 시도해주십시오.")
         }
-    }
-
-    fun findByEmail(email: String): Account? {
-        return accountRepository.findByEmail(email)
-    }
-
-    fun generatedNickName(): String {
-        val jsonContent = File(accountProperties.nameJson).readText()
-        val nickName = jsonConvertor.readValue(jsonContent, NickName::class.java)
-        return "${nickName.first.random().name} ${nickName.last.random().name}"
     }
 }
