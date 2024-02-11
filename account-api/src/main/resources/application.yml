@@ -51,7 +51,7 @@ spring:
           kakao:
             client-id: ENC(/NVz3t1aoMGO4L9F9MI017vxf8KcHfo3y/+xMWKfUAg1LcGiqMY6l0NvNXXPjKJC)
             client-secret: ENC(+c7I7VG9cIym6iwPEnZKIzpkTVmhDB/SbHBy5RO2fGSse9r7pauDqfzRrSrvnmv1)
-            redirect-uri: http://localhost:8080/login/oauth2/code/kakao
+            redirect-uri: http://localhost:3000/login/oauth2/code/kakao
             client-authentication-method: client_secret_post
             authorization-grant-type: authorization_code
             client-name: kakao
@@ -63,7 +63,7 @@ spring:
           naver:
             client-id: ENC(lPu7dZZ8/5Nw+58vtKCPkVqWFFOavr41eEQ4iTZHeAM=)
             client-secret: ENC(C3vESb/5wp0oAS5Xv0+31pE002otp/aN)
-            redirect-uri: http://localhost:8080/login/oauth2/code/naver
+            redirect-uri: http://localhost:3000/login/oauth2/code/naver
             clientAuthenticationMethod: client_secret_post
             authorization-grant-type: authorization_code
             client-name: naver
