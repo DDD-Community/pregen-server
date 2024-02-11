@@ -19,9 +19,13 @@ class JwtAuthFilter(
         response: HttpServletResponse,
         filterChain: FilterChain
     ) {
-
         try {
-            val accessToken = request.getHeader("Authorization")
+            if (request.requestURI.startsWith("/login")) {
+                filterChain.doFilter(request, response)
+                return
+            }
+
+            val accessToken = jwtTokenUtil.getTokenFromCookie("accessToken", request)
             if (!StringUtils.hasText(accessToken)) {
                 filterChain.doFilter(request, response)
                 return
@@ -33,17 +37,17 @@ class JwtAuthFilter(
                 val authentication = jwtTokenUtil.getAuthentication(accessToken)
                 SecurityContextHolder.getContext().authentication = authentication
             }
-
-            filterChain.doFilter(request, response)
         } catch (e: Exception) {
             // 에러 발생 시, 클라이언트에게 에러 메시지를 전달. 이후 커스텀 예외 response로 변경
             val objectMapper = ObjectMapper()
             response.contentType = "application/json; charset=utf-8"
             response.characterEncoding = "UTF-8"
-            response.status = 401
+            response.status = HttpServletResponse.SC_UNAUTHORIZED
             response.writer.write(
                 objectMapper.writeValueAsString(mapOf("message" to e.message))
             )
         }
+
+        filterChain.doFilter(request, response)
     }
 }
