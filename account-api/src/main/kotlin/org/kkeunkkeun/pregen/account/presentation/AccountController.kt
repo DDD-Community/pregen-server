@@ -7,7 +7,6 @@ import org.kkeunkkeun.pregen.account.domain.dto.AccountResponse
 import org.kkeunkkeun.pregen.account.domain.dto.AccountUpdateRequest
 import org.kkeunkkeun.pregen.account.service.AccountService
 import org.springframework.http.ResponseEntity
-import org.springframework.security.core.Authentication
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.web.bind.annotation.*
 
@@ -16,11 +15,6 @@ import org.springframework.web.bind.annotation.*
 class AccountController(
     private val accountService: AccountService,
 ) {
-
-    @PostMapping("/login")
-    fun login(response: HttpServletResponse, authentication: Authentication): ResponseEntity<HttpServletResponse> {
-        return ResponseEntity.ok().body(accountService.loginAccount(response, authentication))
-    }
 
     @PostMapping("/logout")
     fun logout(request: HttpServletRequest): ResponseEntity<Unit> {
