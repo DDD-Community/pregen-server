@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import jakarta.servlet.FilterChain
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
+import org.springframework.http.HttpStatus
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.stereotype.Component
 import org.springframework.util.StringUtils
@@ -42,7 +43,7 @@ class JwtAuthFilter(
             val objectMapper = ObjectMapper()
             response.contentType = "application/json; charset=utf-8"
             response.characterEncoding = "UTF-8"
-            response.status = HttpServletResponse.SC_UNAUTHORIZED
+            response.status = HttpStatus.UNAUTHORIZED.value()
             response.writer.write(
                 objectMapper.writeValueAsString(mapOf("message" to e.message))
             )
