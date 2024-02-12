@@ -2,7 +2,7 @@ package org.kkeunkkeun.pregen.presentation.presentation.domain
 
 import jakarta.persistence.*
 import jakarta.persistence.EnumType.STRING
-import org.kkeunkkeun.pregen.common.domain.BaseTimeEntity
+import org.kkeunkkeun.pregen.common.domain.BaseEntity
 import org.kkeunkkeun.pregen.presentation.presentation.domain.PresentationStatus.DELETED
 import org.kkeunkkeun.pregen.presentation.presentation.domain.PresentationStatus.NORMAL
 import org.kkeunkkeun.pregen.presentation.presentation.presentation.PresentationRequest
@@ -21,7 +21,7 @@ class Presentation(
     timeLimit: Int,
 
     alertBeforeLimit: Boolean,
-): BaseTimeEntity() {
+): BaseEntity() {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
