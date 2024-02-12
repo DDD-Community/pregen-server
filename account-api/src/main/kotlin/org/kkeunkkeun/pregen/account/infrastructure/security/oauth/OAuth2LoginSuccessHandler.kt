@@ -1,6 +1,5 @@
 package org.kkeunkkeun.pregen.account.infrastructure.security.oauth
 
-import com.fasterxml.jackson.databind.ObjectMapper
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
 import org.kkeunkkeun.pregen.account.infrastructure.security.jwt.JwtTokenUtil
@@ -16,7 +15,6 @@ class OAuth2LoginSuccessHandler(
     private val jwtTokenUtil: JwtTokenUtil,
     private val accountService: AccountService,
     private val refreshTokenService: RefreshTokenService,
-    private val objectMapper: ObjectMapper,
 ): SimpleUrlAuthenticationSuccessHandler() {
 
     @Override
@@ -38,22 +36,22 @@ class OAuth2LoginSuccessHandler(
             // accessToken을 가지고 있는 유저인지 확인
             refreshTokenService.deleteById(email)
             val jwtToken = jwtTokenUtil.generateToken(account.email, account.role.value)
-            response.contentType = "application/json; charset=utf-8"
-            response.characterEncoding = "UTF-8"
-            response.status = 200
-            response.writer.write(
-                objectMapper.writeValueAsString(jwtToken)
-            )
+            val accessTokenCookie = jwtTokenUtil.generateTokenCookie("accessToken", jwtToken.accessToken)
+            val refreshTokenCookie = jwtTokenUtil.generateTokenCookie("refreshToken", jwtToken.refreshToken)
+
+            response.addCookie(accessTokenCookie)
+            response.addCookie(refreshTokenCookie)
+            response.sendRedirect("/")
         } else {
             // 회원이 존재하지 않는다면, 회원가입 후 token 발행
             val account = accountService.signUp(email, nickName, provider, role, accessToken)
             val jwtToken = jwtTokenUtil.generateToken(account.email, account.role.value)
-            response.contentType = "application/json; charset=utf-8"
-            response.characterEncoding = "UTF-8"
-            response.status = 200
-            response.writer.write(
-                objectMapper.writeValueAsString(jwtToken)
-            )
+            val accessTokenCookie = jwtTokenUtil.generateTokenCookie("accessToken", jwtToken.accessToken)
+            val refreshTokenCookie = jwtTokenUtil.generateTokenCookie("refreshToken", jwtToken.refreshToken)
+
+            response.addCookie(accessTokenCookie)
+            response.addCookie(refreshTokenCookie)
+            response.sendRedirect("/")
         }
     }
 }
