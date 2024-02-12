@@ -80,7 +80,6 @@ subprojects {
         enabled = true
     }
 
-
     tasks.withType<KotlinCompile> {
         kotlinOptions {
             freeCompilerArgs += "-Xjsr305=strict"

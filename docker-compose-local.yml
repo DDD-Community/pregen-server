@@ -6,9 +6,16 @@ services:
       dockerfile: dockerfiles/Dockerfile
     ports:
       - 8080:8080
+    volumes:
+      - ./account-api/src/main/resources:/data/etc
     environment:
+      TZ: Asia/Seoul
       SPRING_PROFILES_ACTIVE: local
       DB_HOST: mysql
+      REDIS_HOST: redis
+      custom.name-json: /data/etc/names/names.json
+    depends_on:
+      - mysql
 
   mysql:
     image: mysql:8.2.0
@@ -22,7 +29,22 @@ services:
       - --collation-server=utf8mb4_unicode_ci
     volumes:
       - mysql:/var/lib/mysql
+      - ./resources/db/init.sql:/docker-entrypoint-initdb.d/init.sql
     restart: unless-stopped
+
+  redis:
+    image: redis:7.2.4
+    expose:
+      - 6379
+    command:
+      - bash
+      - -c
+      - redis-server --requirepass 1234 --port 6379 --maxmemory $$(( $$( cat /sys/fs/cgroup/memory/memory.limit_in_bytes 2>/dev/null || cat /sys/fs/cgroup/memory.max ) - 100000000)) --maxmemory-policy volatile-lru
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+    restart: always
 
 volumes:
   mysql: {}
