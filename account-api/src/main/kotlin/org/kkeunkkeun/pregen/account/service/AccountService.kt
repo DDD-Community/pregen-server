@@ -22,6 +22,7 @@ import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.client.RestTemplate
 import java.io.File
+import java.util.*
 
 @Transactional(readOnly = true)
 @Service
@@ -44,7 +45,8 @@ class AccountService(
             nickName = nickName,
             socialProvider = SocialProvider.isType(provider),
             role = AccountRole.isType(role),
-            socialAccessToken = accessToken
+            socialAccessToken = accessToken,
+            sessionId = UUID.randomUUID().toString(),
         )
         return accountRepository.save(account)
     }

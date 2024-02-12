@@ -3,9 +3,19 @@ services:
   api:
     build:
       context: .
-      dockerfile: dockerfiles/Dockerfile
+      dockerfile: dockerfiles/Dockerfile-api
     ports:
       - 8080:8080
+    environment:
+      SPRING_PROFILES_ACTIVE: local
+      DB_HOST: mysql
+
+  ws:
+    build:
+      context: .
+      dockerfile: dockerfiles/Dockerfile-ws
+    ports:
+      - 8081:8081
     environment:
       SPRING_PROFILES_ACTIVE: local
       DB_HOST: mysql
