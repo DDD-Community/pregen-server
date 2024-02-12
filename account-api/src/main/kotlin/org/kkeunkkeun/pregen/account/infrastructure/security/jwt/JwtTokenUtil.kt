@@ -5,7 +5,7 @@ import io.jsonwebtoken.security.Keys
 import jakarta.servlet.http.Cookie
 import jakarta.servlet.http.HttpServletRequest
 import org.kkeunkkeun.pregen.account.domain.AccountRole
-import org.kkeunkkeun.pregen.account.infrastructure.AccountRepository
+import org.kkeunkkeun.pregen.account.infrastructure.AccountJpaRepository
 import org.kkeunkkeun.pregen.account.infrastructure.config.AccountProperties
 import org.kkeunkkeun.pregen.account.infrastructure.security.jwt.dto.JwtTokenResponse
 import org.kkeunkkeun.pregen.account.infrastructure.security.jwt.refreshtoken.RefreshTokenService
@@ -22,7 +22,7 @@ import javax.crypto.SecretKey
 class JwtTokenUtil(
     private val accountProperties: AccountProperties,
     private val refreshTokenService: RefreshTokenService,
-    private val accountRepository: AccountRepository,
+    private val accountJpaRepository: AccountJpaRepository,
 ) {
 
     private val jwt = accountProperties.jwt
@@ -113,7 +113,7 @@ class JwtTokenUtil(
     }
 
     fun getAuthentication(accessToken: String): Authentication {
-        val findAccount = (accountRepository.findByEmail(getUid(accessToken))
+        val findAccount = (accountJpaRepository.findByEmail(getUid(accessToken))
             ?: throw IllegalArgumentException("존재하지 않는 계정입니다."))
         val user: UserDetails = User.builder()
             .username(findAccount.email)

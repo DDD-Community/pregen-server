@@ -7,13 +7,15 @@ import org.springframework.data.annotation.LastModifiedDate
 import org.springframework.data.jpa.domain.support.AuditingEntityListener
 import java.time.LocalDateTime
 
-@EntityListeners(AuditingEntityListener::class)
 @MappedSuperclass
+@EntityListeners(AuditingEntityListener::class)
 abstract class BaseEntity {
 
     @CreatedDate
-    var createdAt: LocalDateTime? = null
+    var createdAt: LocalDateTime? = LocalDateTime.now()
+        protected set
 
     @LastModifiedDate
-    var modifiedAt: LocalDateTime? = null
+    var modifiedAt: LocalDateTime? = LocalDateTime.now()
+        protected set
 }

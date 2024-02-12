@@ -1,36 +1,7 @@
 spring:
-  profiles:
-    include:
-      - common
-      - local
-      - crypto
-      - oauth2
-      - secret
-
----
-
-spring:
   config:
     activate:
       on-profile: local
-  datasource:
-    url: jdbc:h2:mem:dev
-    username: sa
-    password:
-    driver-class-name: org.h2.Driver
-  h2:
-    console:
-      enabled: true
-  jpa:
-    hibernate:
-      ddl-auto: create
-    properties:
-      show_sql: false
-      hibernate:
-        format_sql: true
-        use_sql_comments: true
-  jackson:
-    property-naming-strategy: SNAKE_CASE
 
 custom:
   jwt:

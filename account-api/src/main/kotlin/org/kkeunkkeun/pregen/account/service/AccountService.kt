@@ -8,7 +8,6 @@ import org.kkeunkkeun.pregen.account.domain.SocialProvider
 import org.kkeunkkeun.pregen.account.domain.dto.AccountResponse
 import org.kkeunkkeun.pregen.account.domain.dto.AccountUpdateRequest
 import org.kkeunkkeun.pregen.account.domain.dto.NickName
-import org.kkeunkkeun.pregen.account.infrastructure.AccountRepository
 import org.kkeunkkeun.pregen.account.infrastructure.config.AccountProperties
 import org.kkeunkkeun.pregen.account.infrastructure.config.SocialClientProperties
 import org.kkeunkkeun.pregen.account.infrastructure.security.jwt.JwtTokenUtil
