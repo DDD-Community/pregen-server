@@ -2,6 +2,8 @@ package org.kkeunkkeun.pregen.account.infrastructure.security.jwt
 
 import io.jsonwebtoken.*
 import io.jsonwebtoken.security.Keys
+import jakarta.servlet.http.Cookie
+import jakarta.servlet.http.HttpServletRequest
 import org.kkeunkkeun.pregen.account.domain.AccountRole
 import org.kkeunkkeun.pregen.account.infrastructure.AccountJpaRepository
 import org.kkeunkkeun.pregen.account.infrastructure.config.AccountProperties
@@ -31,14 +33,9 @@ class JwtTokenUtil(
         secretKey = Keys.hmacShaKeyFor(decodedKey)
     }
 
-    fun extractToken(token: String?): String? {
-        if (token != null) {
-            if (!token.startsWith("Bearer ")) {
-                throw IllegalArgumentException("Invalid token")
-            }
-            return token.split(" ")[1].trim()
-        }
-        return null;
+    fun getTokenFromCookie(tokenType: String, request: HttpServletRequest): String {
+        val jwtCookie = request.cookies.find { it.name == tokenType }  ?: throw IllegalArgumentException("쿠키에 토큰이 존재하지 않습니다.")
+        return jwtCookie.value
     }
 
     fun generateToken(email: String, role: String): JwtTokenResponse {
@@ -47,10 +44,8 @@ class JwtTokenUtil(
 
         val token = refreshTokenService.saveTokenInfo(email, accessToken, refreshToken)
         return JwtTokenResponse(
-                    accessToken = accessToken,
-                    refreshToken = refreshToken,
-                    tokenType = "Bearer",
-                    expiresIn = accountProperties.jwt.accessExpirationTime,
+                    accessToken = token.accessToken,
+                    refreshToken = token.refreshToken,
                 )
     }
 
@@ -87,7 +82,7 @@ class JwtTokenUtil(
             val claims = Jwts.parserBuilder()
                 .setSigningKey(secretKey)
                 .build()
-                .parseClaimsJws(token.removePrefix("Bearer ").trim())
+                .parseClaimsJws(token)
             return claims.body.expiration.after(Date())
         } catch (e: ExpiredJwtException) {
             throw IllegalArgumentException("Expired access token")
@@ -97,6 +92,24 @@ class JwtTokenUtil(
                 else -> throw e
             }
         }
+    }
+
+    fun generateTokenCookie(tokenType: String, jwtToken: String): Cookie {
+        return Cookie(tokenType, jwtToken).apply {
+            path = "/"
+            isHttpOnly = true // 요청 외 클라이언트에서 쿠키를 읽을 수 없도록 설정
+            secure = false // 아직 https 적용 안함. 이후에 적용하면 true로 변경
+            maxAge = (getTokenExpirationTime(jwtToken).time - System.currentTimeMillis() / 1000).toInt()
+        }
+    }
+
+    fun getTokenExpirationTime(token: String): Date {
+        return Jwts.parserBuilder()
+            .setSigningKey(secretKey)
+            .build()
+            .parseClaimsJws(token)
+            .body
+            .expiration
     }
 
     fun getAuthentication(accessToken: String): Authentication {
@@ -114,7 +127,7 @@ class JwtTokenUtil(
         return Jwts.parserBuilder()
             .setSigningKey(secretKey)
             .build()
-            .parseClaimsJws(token.removePrefix("Bearer ").trim())
+            .parseClaimsJws(token)
             .body
             .subject
     }
@@ -123,7 +136,7 @@ class JwtTokenUtil(
         return Jwts.parserBuilder()
             .setSigningKey(secretKey)
             .build()
-            .parseClaimsJws(token.removePrefix("Bearer ").trim())
+            .parseClaimsJws(token)
             .body
             .get("role", String::class.java)
     }

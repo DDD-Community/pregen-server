@@ -18,4 +18,12 @@ class AccountRepositoryImpl(
         val account = this.findByEmail(email) ?: throw RuntimeException()
         return account.id
     }
+
+    override fun save(account: Account): Account {
+        return accountJpaRepository.save(account)
+    }
+
+    override fun delete(account: Account) {
+        accountJpaRepository.delete(account)
+    }
 }

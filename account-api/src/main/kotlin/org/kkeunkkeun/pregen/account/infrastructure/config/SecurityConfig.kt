@@ -8,6 +8,7 @@ import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity
+import org.springframework.security.config.http.SessionCreationPolicy
 import org.springframework.security.crypto.factory.PasswordEncoderFactories
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.security.web.SecurityFilterChain
@@ -28,7 +29,12 @@ class SecurityConfig(
         http
             .formLogin { formLogin -> formLogin.disable()}
             .httpBasic { httpBasic -> httpBasic.disable() }
+            .cors { cors -> cors.disable() } // 이후 도메인 설정이 되었다면 변경 필요
             .csrf { csrf -> csrf.disable() }
+            .sessionManagement {
+                sessionManagement -> sessionManagement
+                    .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+            }
             .authorizeHttpRequests {
                 auth -> auth
                     .requestMatchers("/accounts/**").authenticated()
@@ -48,8 +54,9 @@ class SecurityConfig(
                     .successHandler(oAuth2LoginSuccessHandler)
                     .failureHandler(oAuth2LoginFailureHandler)
             }
+            .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter::class.java)
 
-        return http.addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter::class.java).build()
+        return http.build()
     }
 
     @Bean

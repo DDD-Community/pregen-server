@@ -7,4 +7,8 @@ interface AccountRepository {
     fun findByEmail(email: String): Account?
 
     fun findIdByEmail(email: String): Long?
+
+    fun save(account: Account): Account
+
+    fun delete(account: Account)
 }

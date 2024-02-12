@@ -1,5 +1,5 @@
 custom:
-  baseUrl: http://localhost:8080
+  base-url: http://localhost:8080
   redis:
     host: localhost
     port: 6379
@@ -13,7 +13,7 @@ spring:
     activate:
       on-profile: prod
 custom:
-  base-baseUrl: http://localhost:8080
+  base-url: http://localhost:8080
   redis:
     host: localhost
     port: 6379
