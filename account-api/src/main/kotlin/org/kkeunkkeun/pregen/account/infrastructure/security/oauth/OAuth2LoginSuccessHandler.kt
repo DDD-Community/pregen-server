@@ -5,6 +5,7 @@ import jakarta.servlet.http.HttpServletResponse
 import org.kkeunkkeun.pregen.account.infrastructure.security.jwt.JwtTokenUtil
 import org.kkeunkkeun.pregen.account.infrastructure.security.jwt.refreshtoken.RefreshTokenService
 import org.kkeunkkeun.pregen.account.service.AccountService
+import org.springframework.http.HttpStatus
 import org.springframework.security.core.Authentication
 import org.springframework.security.oauth2.core.user.OAuth2User
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationSuccessHandler
@@ -41,7 +42,7 @@ class OAuth2LoginSuccessHandler(
 
             response.addCookie(accessTokenCookie)
             response.addCookie(refreshTokenCookie)
-            response.sendRedirect("/")
+            response.status = HttpStatus.OK.value()
         } else {
             // 회원이 존재하지 않는다면, 회원가입 후 token 발행
             val account = accountService.signUp(email, nickName, provider, role, accessToken)
@@ -51,7 +52,7 @@ class OAuth2LoginSuccessHandler(
 
             response.addCookie(accessTokenCookie)
             response.addCookie(refreshTokenCookie)
-            response.sendRedirect("/")
+            response.status = HttpStatus.OK.value()
         }
     }
 }
