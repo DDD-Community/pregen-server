@@ -24,8 +24,13 @@ services:
     ports:
       - 8081:8081
     environment:
+      TZ: Asia/Seoul
       SPRING_PROFILES_ACTIVE: local
       DB_HOST: mysql
+      REDIS_HOST: redis
+      custom.name-json: /data/etc/names/names.json
+    depends_on:
+      - mysql
 
   mysql:
     image: mysql:8.2.0
