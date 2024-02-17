@@ -2,6 +2,10 @@ dependencies {
     implementation(project(":common"))
     implementation(project(":account-api"))
     implementation(project(":crypto"))
+
+    implementation("org.springframework.boot:spring-boot-starter-websocket")
+    implementation("org.springframework:spring-messaging:6.1.3")
+    implementation("org.springframework.security:spring-security-messaging")
 }
 
 allOpen {
@@ -11,9 +15,9 @@ allOpen {
 }
 
 tasks.getByName("bootJar") {
-    enabled = false
+    enabled = true
 }
 
 tasks.getByName("jar") {
-    enabled = true
+    enabled = false
 }
