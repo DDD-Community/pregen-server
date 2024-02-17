@@ -4,8 +4,8 @@ class OAuth2Attribute(
     private val attributes: Map<String, Any>,
     private val attributeKey: String,
     private val provider: String,
-    private val email: String,
-    private val nickName: String,
+    val email: String,
+    val nickName: String,
 ) {
 
     companion object {

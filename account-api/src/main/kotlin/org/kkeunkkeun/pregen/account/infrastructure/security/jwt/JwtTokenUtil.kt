@@ -99,7 +99,10 @@ class JwtTokenUtil(
             path = "/"
             isHttpOnly = true // 요청 외 클라이언트에서 쿠키를 읽을 수 없도록 설정
             secure = false // 아직 https 적용 안함. 이후에 적용하면 true로 변경
-            maxAge = (getTokenExpirationTime(jwtToken).time - System.currentTimeMillis() / 1000).toInt()
+            when (tokenType) {
+                "accessToken" -> maxAge = 15 * 60
+                "refreshToken" -> maxAge = 15 * 24 * 60 * 60
+            }
         }
     }
 

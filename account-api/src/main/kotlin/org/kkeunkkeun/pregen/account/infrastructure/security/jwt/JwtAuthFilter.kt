@@ -21,7 +21,7 @@ class JwtAuthFilter(
         filterChain: FilterChain
     ) {
         try {
-            if (request.requestURI.startsWith("/login")) {
+            if (request.requestURI.startsWith("/accounts/login")) {
                 filterChain.doFilter(request, response)
                 return
             }
