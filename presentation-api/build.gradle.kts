@@ -9,11 +9,3 @@ allOpen {
     annotation("jakarta.persistence.Embeddable")
     annotation("jakarta.persistence.MappedSuperclass")
 }
-
-tasks.getByName("bootJar") {
-    enabled = false
-}
-
-tasks.getByName("jar") {
-    enabled = true
-}

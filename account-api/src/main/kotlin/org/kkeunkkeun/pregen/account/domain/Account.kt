@@ -22,9 +22,6 @@ class Account(
     @Column(nullable = false)
     var socialAccessToken: String,
 
-    @Column(nullable = false)
-    var sessionId: String,
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     val id: Long? = null,
