@@ -4,6 +4,7 @@ spring:
       on-profile: local
 
 custom:
+  name-json: "account-api/src/main/resources/names/names.json"
   jwt:
     secret: ENC(JuKgHEVRxF4KNsrDCA5DPs99AsOaLbkLSmqVGbm1En8ahwd/S9QV8I+SrqeYwhMcH4dvFsOgfP5ug0MYuxpo5A==)
     access-expiration-time: 900000 # 15분 -> 15 * 60 * 1000
