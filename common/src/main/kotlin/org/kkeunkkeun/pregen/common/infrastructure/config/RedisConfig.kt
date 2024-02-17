@@ -10,24 +10,12 @@ import org.springframework.data.redis.serializer.GenericToStringSerializer
 import org.springframework.data.redis.serializer.StringRedisSerializer
 
 @Configuration
-class RedisConfig(
-    private val commonProperties: CommonProperties,
-) {
+class RedisConfig {
 
     @Bean
-    fun redisConnectionFactory(): LettuceConnectionFactory {
-        RedisStandaloneConfiguration().let { config ->
-            config.hostName = commonProperties.redis.host
-            config.port = commonProperties.redis.port
-            config.password = RedisPassword.of(commonProperties.redis.password)
-            return LettuceConnectionFactory(config)
-        }
-    }
-
-    @Bean
-    fun redisTemplate(): RedisTemplate<String, Any> {
+    fun redisTemplate(connectionFactory: LettuceConnectionFactory): RedisTemplate<String, Any> {
         val redisTemplate = RedisTemplate<String, Any>()
-        redisTemplate.connectionFactory = redisConnectionFactory()
+        redisTemplate.connectionFactory = connectionFactory
         redisTemplate.keySerializer = StringRedisSerializer()
         redisTemplate.valueSerializer = StringRedisSerializer()
         redisTemplate.valueSerializer = GenericToStringSerializer(Long::class.java)
