@@ -14,6 +14,9 @@ import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.security.web.SecurityFilterChain
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter
 import org.springframework.security.web.header.writers.frameoptions.XFrameOptionsHeaderWriter
+import org.springframework.web.cors.CorsConfiguration
+import org.springframework.web.cors.CorsConfigurationSource
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource
 
 @Configuration
 @EnableWebSecurity
@@ -29,7 +32,8 @@ class SecurityConfig(
         http
             .formLogin { formLogin -> formLogin.disable()}
             .httpBasic { httpBasic -> httpBasic.disable() }
-            .cors { cors -> cors.disable() } // 이후 도메인 설정이 되었다면 변경 필요
+//            .cors { cors -> cors.disable() } // 이후 도메인 설정이 되었다면 변경 필요
+            .cors { corsConfigurationSource() } // 이후 도메인 설정이 되었다면 변경 필요
             .csrf { csrf -> csrf.disable() }
             .sessionManagement {
                 sessionManagement -> sessionManagement
@@ -62,5 +66,19 @@ class SecurityConfig(
     @Bean
     fun passwordEncoder(): PasswordEncoder {
         return PasswordEncoderFactories.createDelegatingPasswordEncoder()
+    }
+
+    @Bean
+    fun corsConfigurationSource(): CorsConfigurationSource {
+        val configuration = CorsConfiguration()
+
+        configuration.addAllowedOriginPattern("*")
+        configuration.addAllowedHeader("*")
+        configuration.addAllowedMethod("*")
+        configuration.validateAllowCredentials()
+
+        val source = UrlBasedCorsConfigurationSource()
+        source.registerCorsConfiguration("/ws/info", configuration)
+        return source
     }
 }
