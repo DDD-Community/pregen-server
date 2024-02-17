@@ -8,11 +8,14 @@ import org.kkeunkkeun.pregen.account.domain.SocialProvider
 import org.kkeunkkeun.pregen.account.domain.dto.AccountResponse
 import org.kkeunkkeun.pregen.account.domain.dto.AccountUpdateRequest
 import org.kkeunkkeun.pregen.account.domain.dto.NickName
+import org.kkeunkkeun.pregen.account.domain.dto.OauthTokenResponse
 import org.kkeunkkeun.pregen.account.infrastructure.config.AccountProperties
 import org.kkeunkkeun.pregen.account.infrastructure.config.SocialClientProperties
 import org.kkeunkkeun.pregen.account.infrastructure.security.jwt.JwtTokenUtil
 import org.kkeunkkeun.pregen.account.infrastructure.security.jwt.refreshtoken.RefreshTokenService
+import org.kkeunkkeun.pregen.account.infrastructure.security.oauth.OAuth2Attribute
 import org.kkeunkkeun.pregen.common.service.JsonConvertor
+import org.springframework.core.ParameterizedTypeReference
 import org.springframework.http.HttpEntity
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpMethod
@@ -20,7 +23,10 @@ import org.springframework.http.MediaType
 import org.springframework.security.core.Authentication
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import org.springframework.util.LinkedMultiValueMap
+import org.springframework.util.MultiValueMap
 import org.springframework.web.client.RestTemplate
+import org.springframework.web.reactive.function.client.WebClient
 import java.io.File
 import java.util.*
 
@@ -31,8 +37,8 @@ class AccountService(
     private val refreshTokenService: RefreshTokenService,
 
     private val jwtTokenUtil: JwtTokenUtil,
-    private val restTemplate: RestTemplate,
     private val jsonConvertor: JsonConvertor,
+    private val restTemplate: RestTemplate,
 
     private val accountProperties: AccountProperties,
     private val socialProperties: SocialClientProperties,
@@ -49,6 +55,30 @@ class AccountService(
             sessionId = UUID.randomUUID().toString(),
         )
         return accountRepository.save(account)
+    }
+
+    @Transactional
+    fun loginAccount(provider: String, code: String, response: HttpServletResponse) {
+        when (provider) {
+            SocialProvider.KAKAO.value -> {
+                val socialAccessToken = getSocialToken(code, provider)
+                val userInfo = getUserInfo(provider, socialAccessToken)
+                val attribute = OAuth2Attribute.of(provider, "email", userInfo, generatedNickName())
+
+                val account = accountRepository.findByEmail(attribute.email)
+                if (account != null) {
+                    account.updateEmail(attribute.email)
+                } else {
+                    signUp(attribute.email, attribute.email, provider, AccountRole.MEMBER.value, socialAccessToken.accessToken)
+                }
+
+                val (accessToken, refreshToken) = jwtTokenUtil.generateToken(attribute.email, AccountRole.MEMBER.value)
+                val accessTokenCookie = jwtTokenUtil.generateTokenCookie("accessToken", accessToken)
+                val refreshTokenCookie = jwtTokenUtil.generateTokenCookie("refreshToken", refreshToken)
+                response.addCookie(accessTokenCookie)
+                response.addCookie(refreshTokenCookie)
+            }
+        }
     }
 
     @Transactional
@@ -119,6 +149,57 @@ class AccountService(
         val jsonContent = File(accountProperties.nameJson).readText()
         val nickName = jsonConvertor.readValue(jsonContent, NickName::class.java)
         return "${nickName.first.random().name} ${nickName.last.random().name}"
+    }
+
+    private fun getSocialToken(code: String, social: String): OauthTokenResponse {
+        val oauthTokenResponse: OauthTokenResponse
+        when (social) {
+            SocialProvider.KAKAO.value -> {
+                oauthTokenResponse = WebClient.create()
+                    .post()
+                    .uri(socialProperties.kakaoTokenUrl())
+                    .contentType(MediaType.APPLICATION_FORM_URLENCODED)
+                    .bodyValue(tokenRequest(code, socialProperties))
+                    .retrieve()
+                    .bodyToMono(OauthTokenResponse::class.java)
+                    .block()!!
+            }
+
+            else -> {
+                throw IllegalArgumentException("지원하지 않는 소셜 로그인입니다.")
+            }
+        }
+        return oauthTokenResponse
+    }
+
+    private fun getUserInfo(provider: String, oauthTokenResponse: OauthTokenResponse): Map<String, Any> {
+        var map: Map<String, Any> = mapOf()
+        when (provider) {
+            SocialProvider.KAKAO.value -> {
+                map = WebClient.create()
+                    .get()
+                    .uri(socialProperties.kakao.userInfoUri)
+                    .headers { headers ->
+                        headers.setBearerAuth(oauthTokenResponse.accessToken)
+                    }
+                    .retrieve()
+                    .bodyToMono(object : ParameterizedTypeReference<Map<String, Any>>() {})
+                    .block()!!
+            }
+            else -> {
+                throw IllegalArgumentException("지원하지 않는 소셜 로그인입니다.")
+            }
+        }
+        return map
+    }
+
+    private fun tokenRequest(code: String, socialProperties: SocialClientProperties): MultiValueMap<String, String> {
+        val formData = LinkedMultiValueMap<String, String>()
+        formData.add("grant_type", "authorization_code")
+        formData.add("client_id", socialProperties.kakao.clientId)
+        formData.add("redirect_uri", socialProperties.kakao.redirectUri)
+        formData.add("code", code)
+        return formData
     }
 
     private fun sendRevokeRequest(accessToken: String, provider: SocialProvider) {

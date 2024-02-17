@@ -16,6 +16,13 @@ class AccountController(
     private val accountService: AccountService,
 ) {
 
+    @GetMapping("/login/process")
+    fun login(
+        @RequestParam("code") code: String,
+        @RequestParam("provider") provider: String, response: HttpServletResponse): ResponseEntity<Any> {
+        return ResponseEntity.ok().body(accountService.loginAccount(provider, code, response))
+    }
+
     @PostMapping("/logout")
     fun logout(request: HttpServletRequest): ResponseEntity<Unit> {
         val authentication = SecurityContextHolder.getContext().authentication
