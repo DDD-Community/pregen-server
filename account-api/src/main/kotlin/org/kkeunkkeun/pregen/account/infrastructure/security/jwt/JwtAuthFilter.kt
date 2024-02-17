@@ -44,8 +44,8 @@ class JwtAuthFilter(
             response.contentType = "application/json; charset=utf-8"
             response.characterEncoding = "UTF-8"
             response.status = HttpStatus.UNAUTHORIZED.value()
-            response.writer.write(
-                objectMapper.writeValueAsString(mapOf("message" to e.message))
+            response.outputStream.write(
+                objectMapper.writeValueAsBytes(mapOf("message" to e.message))
             )
         }
 

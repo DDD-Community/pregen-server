@@ -3,7 +3,7 @@ services:
   api:
     build:
       context: .
-      dockerfile: dockerfiles/Dockerfile
+      dockerfile: dockerfiles/Dockerfile-api
     ports:
       - 8080:8080
     volumes:
@@ -16,6 +16,16 @@ services:
       custom.name-json: /data/etc/names/names.json
     depends_on:
       - mysql
+
+  ws:
+    build:
+      context: .
+      dockerfile: dockerfiles/Dockerfile-ws
+    ports:
+      - 8081:8081
+    environment:
+      SPRING_PROFILES_ACTIVE: local
+      DB_HOST: mysql
 
   mysql:
     image: mysql:8.2.0

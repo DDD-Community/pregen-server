@@ -1,4 +1,4 @@
-package org.kkeunkkeun.pregen.presentation
+package org.kkeunkkeun.pregen.practice
 
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.runApplication
@@ -9,10 +9,10 @@ import org.springframework.context.annotation.ComponentScan
     "org.kkeunkkeun.pregen.account",
     "org.kkeunkkeun.pregen.common",
     "org.kkeunkkeun.pregen.crypto",
-    "org.kkeunkkeun.pregen.presentation",
+    "org.kkeunkkeun.pregen.practice",
 ])
-class PresentationApiApplication
+class PracticeWebsocketApplication
 
 fun main(args: Array<String>) {
-    runApplication<PresentationApiApplication>(*args)
+    runApplication<PracticeWebsocketApplication>(*args)
 }

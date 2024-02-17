@@ -20,14 +20,14 @@ class OAuth2Attribute(
 
         private fun ofKakao(provider: String, attributeKey: String, attributes: Map<String, Any>, randomNickName: String): OAuth2Attribute {
             val kakaoAccount = attributes["kakao_account"] as Map<String, Any>
-            val profile = kakaoAccount["profile"] as Map<String, Any>
+            val profile = kakaoAccount["profile"] as? Map<String, Any>?
 
             return OAuth2Attribute(
                 email = kakaoAccount["email"] as? String ?: throw IllegalArgumentException("email이 존재하지 않습니다."),
                 provider = provider,
                 attributes = kakaoAccount,
                 attributeKey = attributeKey,
-                nickName = profile.get("nickname") as? String ?: randomNickName,
+                nickName = profile?.get("nickname") as? String ?: randomNickName,
             )
         }
 
