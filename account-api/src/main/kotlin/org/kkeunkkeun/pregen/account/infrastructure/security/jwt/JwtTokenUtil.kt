@@ -15,6 +15,7 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority
 import org.springframework.security.core.userdetails.User
 import org.springframework.security.core.userdetails.UserDetails
 import org.springframework.stereotype.Component
+import java.time.Duration
 import java.util.*
 import javax.crypto.SecretKey
 
@@ -112,8 +113,8 @@ class JwtTokenUtil(
             isHttpOnly = true // 요청 외 클라이언트에서 쿠키를 읽을 수 없도록 설정
             secure = false // 아직 https 적용 안함. 이후에 적용하면 true로 변경
             when (tokenType) {
-                "accessToken" -> maxAge = 15 * 60
-                "refreshToken" -> maxAge = 15 * 24 * 60 * 60
+                "accessToken" -> maxAge = accountProperties.jwt.accessExpirationTime.toInt() / 1000
+                "refreshToken" -> maxAge = accountProperties.jwt.refreshExpirationTime.toInt() / 1000
             }
         }
     }
