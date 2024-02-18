@@ -35,5 +35,5 @@ oauth:
   google:
     client-id: ENC(luscQ6r+mxP+gAP78vcRKcTijftTHz9VSVOuqedk3K7MgiXy9DnlY41iidg/hicV9TrwHw0l7qwrB6CBXJblOx0mOPYMAzovP8iy7ioZ8Bom1Ni/8nMFwg==)
     client-secret: ENC(jg1P3lhfBAokesMnvtuG5Kb0KIS3GIikIOfsNKztn3x67Qvhlt4iSbHbaMZFHXf+)
-    redirect-uri: http://localhost:3000/login
+    redirect-uri: http://localhost:3000/accounts/login/process
     scope: email, profile

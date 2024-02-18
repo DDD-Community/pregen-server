@@ -1,6 +1,8 @@
 package org.kkeunkkeun.pregen.account.domain
 
 import jakarta.persistence.*
+import org.kkeunkkeun.pregen.account.domain.dto.OauthTokenResponse
+import org.kkeunkkeun.pregen.account.oauth.domain.SocialAuthToken
 import org.kkeunkkeun.pregen.common.domain.BaseEntity
 
 @Entity
@@ -19,8 +21,8 @@ class Account(
     @Enumerated(EnumType.STRING)
     var role: AccountRole,
 
-    @Column(nullable = false)
-    var socialAccessToken: String,
+    @Embedded
+    var socialAuthToken: SocialAuthToken,
 
     @Column(nullable = false)
     var sessionId: String,
@@ -30,15 +32,15 @@ class Account(
     val id: Long? = null,
 ): BaseEntity() {
 
-    fun updateEmail(email: String) {
+    fun updateAuthProfile(email: String, socialToken: OauthTokenResponse) {
         this.email = email
+        this.socialAuthToken.updateAccessToken(socialToken.accessToken)
+        this.socialAuthToken.updateAccessTokenExpiresIn(socialToken.expiresIn)
+        socialToken.refreshToken?.let { this.socialAuthToken.updateRefreshToken(it) }
+        socialToken.refreshTokenExpiresIn?.let { this.socialAuthToken.updateRefreshTokenExpiresIn(it) }
     }
 
     fun updateNickName(nickName: String) {
         this.nickName = nickName
-    }
-
-    fun updateAccessToken(accessToken: String) {
-        this.socialAccessToken = accessToken
     }
 }

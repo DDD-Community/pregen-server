@@ -21,7 +21,7 @@ class JwtAuthFilter(
         filterChain: FilterChain
     ) {
         try {
-            if (request.requestURI.startsWith("/accounts/login")) {
+            if (request.requestURI.startsWith("/accounts/login") || request.requestURI.startsWith("/accounts/reissue")) {
                 filterChain.doFilter(request, response)
                 return
             }
@@ -38,6 +38,8 @@ class JwtAuthFilter(
                 val authentication = jwtTokenUtil.getAuthentication(accessToken)
                 SecurityContextHolder.getContext().authentication = authentication
             }
+
+            filterChain.doFilter(request, response)
         } catch (e: Exception) {
             // 에러 발생 시, 클라이언트에게 에러 메시지를 전달. 이후 커스텀 예외 response로 변경
             val objectMapper = ObjectMapper()
@@ -48,7 +50,5 @@ class JwtAuthFilter(
                 objectMapper.writeValueAsBytes(mapOf("message" to e.message))
             )
         }
-
-        filterChain.doFilter(request, response)
     }
 }

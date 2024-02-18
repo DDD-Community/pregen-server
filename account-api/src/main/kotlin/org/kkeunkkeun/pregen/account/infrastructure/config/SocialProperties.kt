@@ -9,10 +9,6 @@ data class SocialClientProperties @ConstructorBinding constructor(
     val naver: Social,
 ) {
 
-    fun kakaoTokenUrl(): String {
-        return "https://kauth.kakao.com/oauth/token"
-    }
-
     fun kakaoRevokeUrl(): String {
         return "https://kapi.kakao.com/v1/user/unlink"
     }

@@ -1,5 +1,7 @@
 package org.kkeunkkeun.pregen.account.infrastructure.security.oauth
 
+import org.kkeunkkeun.pregen.account.domain.SocialProvider
+
 class OAuth2Attribute(
     private val attributes: Map<String, Any>,
     private val attributeKey: String,
@@ -9,12 +11,11 @@ class OAuth2Attribute(
 ) {
 
     companion object {
-        fun of(provider: String, attributeKey: String, attributes: Map<String, Any>, nickName: String): OAuth2Attribute {
-            return when (provider) {
-                "kakao" -> ofKakao(provider, "email", attributes, nickName)
-                "naver" -> ofNaver(provider, "id", attributes, nickName)
-                "google" -> ofGoogle(provider, attributeKey, attributes, nickName)
-                else -> throw IllegalArgumentException("지원하지 않는 OAuth2 공급자입니다.")
+        fun of(providerType: SocialProvider, attributes: Map<String, Any>, nickName: String): OAuth2Attribute {
+            return when (providerType) {
+                SocialProvider.KAKAO -> ofKakao(providerType.value, "email", attributes, nickName)
+                SocialProvider.NAVER -> ofNaver(providerType.value, "response", attributes, nickName)
+                SocialProvider.GOOGLE -> ofGoogle(providerType.value, "id", attributes, nickName)
             }
         }
 
@@ -32,7 +33,7 @@ class OAuth2Attribute(
         }
 
         private fun ofNaver(provider: String, attributeKey: String, attributes: Map<String, Any>, randomNickName: String): OAuth2Attribute {
-            val response: Map<String, Any> = attributes["response"] as Map<String, Any>
+            val response: Map<String, Any> = attributes[attributeKey] as Map<String, Any>
 
             return OAuth2Attribute(
                 attributes = response,
