@@ -34,8 +34,20 @@ class JwtTokenUtil(
     }
 
     fun getTokenFromCookie(tokenType: String, request: HttpServletRequest): String {
-        val jwtCookie = request.cookies.find { it.name == tokenType }  ?: throw IllegalArgumentException("쿠키에 토큰이 존재하지 않습니다.")
-        return jwtCookie.value
+        // 'cookie' 헤더 값을 가져옵니다.
+        val cookieHeader = request.getHeader("cookie")
+            ?: throw IllegalArgumentException("쿠키 헤더가 요청에 존재하지 않습니다.")
+
+        // 쿠키 헤더에서 토큰 타입에 해당하는 값을 파싱
+        val tokenValue = cookieHeader
+            .split("; ")
+            .map { it.split("=") } // 각 쿠키를 "=" 기호를 사용하여 키와 값으로 분리
+            .firstOrNull { it.first() == tokenType } // 토큰 타입에 해당하는 쌍을 찾음
+            ?.let { it.getOrNull(1) ?: throw IllegalArgumentException("쿠키 값이 '$tokenType'로 올바르게 시작하지 않습니다.") }
+            ?: throw IllegalArgumentException("$tokenType 토큰이 쿠키 값에 존재하지 않습니다.")
+
+        // tokenType에 해당하는 토큰 값을 반환합니다.
+        return tokenValue
     }
 
     fun generateToken(email: String, role: String): JwtTokenResponse {
@@ -56,10 +68,10 @@ class JwtTokenUtil(
         claims["role"] = AccountRole.isType(role).value
 
         return Jwts.builder()
-            .setClaims(claims)          // role 정보
-            .setIssuedAt(now)           // 토큰 발행 시간 정보
-            .setExpiration(accessExpiredDate) // 토큰 만료 시간
-            .signWith(secretKey, SignatureAlgorithm.HS256) // 암호화 알고리즘, secret 값 세팅
+            .setClaims(claims)
+            .setIssuedAt(now)
+            .setExpiration(accessExpiredDate)
+            .signWith(secretKey, SignatureAlgorithm.HS256)
             .compact()
     }
 
@@ -70,10 +82,10 @@ class JwtTokenUtil(
         claims["role"] = AccountRole.isType(role).value
 
         return Jwts.builder()
-            .setClaims(claims)          // role 정보
-            .setIssuedAt(now)           // 토큰 발행 시간 정보
-            .setExpiration(refreshExpiredDate) // 토큰 만료 시간
-            .signWith(secretKey, SignatureAlgorithm.HS256) // 암호화 알고리즘, secret 값 세팅
+            .setClaims(claims)
+            .setIssuedAt(now)
+            .setExpiration(refreshExpiredDate)
+            .signWith(secretKey, SignatureAlgorithm.HS256)
             .compact()
     }
 
@@ -104,15 +116,6 @@ class JwtTokenUtil(
                 "refreshToken" -> maxAge = 15 * 24 * 60 * 60
             }
         }
-    }
-
-    fun getTokenExpirationTime(token: String): Date {
-        return Jwts.parserBuilder()
-            .setSigningKey(secretKey)
-            .build()
-            .parseClaimsJws(token)
-            .body
-            .expiration
     }
 
     fun getAuthentication(accessToken: String): Authentication {
