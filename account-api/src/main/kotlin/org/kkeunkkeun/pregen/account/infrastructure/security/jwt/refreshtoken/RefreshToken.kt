@@ -5,7 +5,7 @@ import org.springframework.data.redis.core.RedisHash
 import org.springframework.data.redis.core.index.Indexed
 import java.io.Serializable
 
-@RedisHash(value = "jwtToken", timeToLive = 60 * 60 * 24 * 30)
+@RedisHash(value = "jwtToken", timeToLive = 60 * 60 * 24 * 15)
 data class RefreshToken(
 
     @Indexed
