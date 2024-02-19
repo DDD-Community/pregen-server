@@ -36,9 +36,11 @@ class SecurityConfig(
             .authorizeHttpRequests {
                 auth -> auth
                     .requestMatchers("/accounts").authenticated()
-                    .requestMatchers("/account/login", "/accounts/login/**").permitAll()
-                    .requestMatchers("/accounts/reissue").permitAll()
-                    .anyRequest().permitAll()
+                    .requestMatchers(
+                        "/api/account/login",
+                        "/api/accounts/login/**",
+                        "/api/accounts/reissue").permitAll()
+                    .anyRequest().authenticated()
             }
             .headers {
                 headers -> headers.addHeaderWriter(
