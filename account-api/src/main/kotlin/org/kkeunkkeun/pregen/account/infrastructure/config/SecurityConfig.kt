@@ -35,7 +35,6 @@ class SecurityConfig(
             }
             .authorizeHttpRequests {
                 auth -> auth
-                    .requestMatchers("/accounts").authenticated()
                     .requestMatchers(
                         "/api/account/login",
                         "/api/accounts/login/**",
