@@ -12,7 +12,7 @@ import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 
 @RestController
-@RequestMapping("/accounts")
+@RequestMapping("/api/accounts")
 class AccountController(
     private val accountService: AccountService,
 ) {
@@ -26,15 +26,15 @@ class AccountController(
         return ResponseEntity.ok().body(accountService.loginAccount(code, provider, state, response))
     }
 
-    @PostMapping("/logout")
-    fun logout(request: HttpServletRequest): ResponseEntity<Unit> {
-        accountService.logoutAccount(request)
-        return ResponseEntity.ok().build()
-    }
-
     @GetMapping("/reissue")
     fun reissueToken(request: HttpServletRequest, response: HttpServletResponse): ResponseEntity<Unit> {
         accountService.reIssueToken(request, response)
+        return ResponseEntity.ok().build()
+    }
+
+    @PostMapping("/logout")
+    fun logout(request: HttpServletRequest): ResponseEntity<Unit> {
+        accountService.logoutAccount(request)
         return ResponseEntity.ok().build()
     }
 
