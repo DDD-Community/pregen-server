@@ -1,9 +1,6 @@
 package org.kkeunkkeun.pregen.account.infrastructure.config
 
 import org.kkeunkkeun.pregen.account.infrastructure.security.jwt.JwtAuthFilter
-import org.kkeunkkeun.pregen.account.infrastructure.security.oauth.CustomOAuth2UserService
-import org.kkeunkkeun.pregen.account.infrastructure.security.oauth.OAuth2LoginFailureHandler
-import org.kkeunkkeun.pregen.account.infrastructure.security.oauth.OAuth2LoginSuccessHandler
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
@@ -22,9 +19,6 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource
 @EnableWebSecurity
 class SecurityConfig(
     private val jwtAuthFilter: JwtAuthFilter,
-    private val customOAuth2UserService: CustomOAuth2UserService,
-    private val oAuth2LoginSuccessHandler: OAuth2LoginSuccessHandler,
-    private val oAuth2LoginFailureHandler: OAuth2LoginFailureHandler
 ) {
 
     @Bean
@@ -41,22 +35,16 @@ class SecurityConfig(
             }
             .authorizeHttpRequests {
                 auth -> auth
-                    .requestMatchers("/accounts/**").authenticated()
-                    .anyRequest().permitAll()
+                    .requestMatchers(
+                        "/api/account/login",
+                        "/api/accounts/login/**",
+                        "/api/accounts/reissue").permitAll()
+                    .anyRequest().authenticated()
             }
             .headers {
                 headers -> headers.addHeaderWriter(
                     XFrameOptionsHeaderWriter(XFrameOptionsHeaderWriter.XFrameOptionsMode.SAMEORIGIN)
                 )
-            }
-            .oauth2Login { oauth2Login ->
-                oauth2Login
-                    .userInfoEndpoint { userInfoEndpoint ->
-                        userInfoEndpoint
-                            .userService(customOAuth2UserService)
-                    }
-                    .successHandler(oAuth2LoginSuccessHandler)
-                    .failureHandler(oAuth2LoginFailureHandler)
             }
             .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter::class.java)
 

@@ -15,6 +15,7 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority
 import org.springframework.security.core.userdetails.User
 import org.springframework.security.core.userdetails.UserDetails
 import org.springframework.stereotype.Component
+import java.time.Duration
 import java.util.*
 import javax.crypto.SecretKey
 
@@ -34,8 +35,20 @@ class JwtTokenUtil(
     }
 
     fun getTokenFromCookie(tokenType: String, request: HttpServletRequest): String {
-        val jwtCookie = request.cookies.find { it.name == tokenType }  ?: throw IllegalArgumentException("쿠키에 토큰이 존재하지 않습니다.")
-        return jwtCookie.value
+        // 'cookie' 헤더 값을 가져옵니다.
+        val cookieHeader = request.getHeader("cookie")
+            ?: throw IllegalArgumentException("쿠키 헤더가 요청에 존재하지 않습니다.")
+
+        // 쿠키 헤더에서 토큰 타입에 해당하는 값을 파싱
+        val tokenValue = cookieHeader
+            .split("; ")
+            .map { it.split("=") } // 각 쿠키를 "=" 기호를 사용하여 키와 값으로 분리
+            .firstOrNull { it.first() == tokenType } // 토큰 타입에 해당하는 쌍을 찾음
+            ?.let { it.getOrNull(1) ?: throw IllegalArgumentException("쿠키 값이 '$tokenType'로 올바르게 시작하지 않습니다.") }
+            ?: throw IllegalArgumentException("$tokenType 토큰이 쿠키 값에 존재하지 않습니다.")
+
+        // tokenType에 해당하는 토큰 값을 반환합니다.
+        return tokenValue
     }
 
     fun generateToken(email: String, role: String): JwtTokenResponse {
@@ -56,10 +69,10 @@ class JwtTokenUtil(
         claims["role"] = AccountRole.isType(role).value
 
         return Jwts.builder()
-            .setClaims(claims)          // role 정보
-            .setIssuedAt(now)           // 토큰 발행 시간 정보
-            .setExpiration(accessExpiredDate) // 토큰 만료 시간
-            .signWith(secretKey, SignatureAlgorithm.HS256) // 암호화 알고리즘, secret 값 세팅
+            .setClaims(claims)
+            .setIssuedAt(now)
+            .setExpiration(accessExpiredDate)
+            .signWith(secretKey, SignatureAlgorithm.HS256)
             .compact()
     }
 
@@ -70,10 +83,10 @@ class JwtTokenUtil(
         claims["role"] = AccountRole.isType(role).value
 
         return Jwts.builder()
-            .setClaims(claims)          // role 정보
-            .setIssuedAt(now)           // 토큰 발행 시간 정보
-            .setExpiration(refreshExpiredDate) // 토큰 만료 시간
-            .signWith(secretKey, SignatureAlgorithm.HS256) // 암호화 알고리즘, secret 값 세팅
+            .setClaims(claims)
+            .setIssuedAt(now)
+            .setExpiration(refreshExpiredDate)
+            .signWith(secretKey, SignatureAlgorithm.HS256)
             .compact()
     }
 
@@ -99,17 +112,11 @@ class JwtTokenUtil(
             path = "/"
             isHttpOnly = true // 요청 외 클라이언트에서 쿠키를 읽을 수 없도록 설정
             secure = false // 아직 https 적용 안함. 이후에 적용하면 true로 변경
-            maxAge = (getTokenExpirationTime(jwtToken).time - System.currentTimeMillis() / 1000).toInt()
+            when (tokenType) {
+                "accessToken" -> maxAge = accountProperties.jwt.accessExpirationTime.toInt() / 1000
+                "refreshToken" -> maxAge = accountProperties.jwt.refreshExpirationTime.toInt() / 1000
+            }
         }
-    }
-
-    fun getTokenExpirationTime(token: String): Date {
-        return Jwts.parserBuilder()
-            .setSigningKey(secretKey)
-            .build()
-            .parseClaimsJws(token)
-            .body
-            .expiration
     }
 
     fun getAuthentication(accessToken: String): Authentication {

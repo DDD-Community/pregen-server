@@ -4,64 +4,90 @@ import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
 import org.kkeunkkeun.pregen.account.domain.Account
 import org.kkeunkkeun.pregen.account.domain.AccountRole
+import org.kkeunkkeun.pregen.account.oauth.domain.SocialAuthToken
 import org.kkeunkkeun.pregen.account.domain.SocialProvider
 import org.kkeunkkeun.pregen.account.domain.dto.AccountResponse
 import org.kkeunkkeun.pregen.account.domain.dto.AccountUpdateRequest
 import org.kkeunkkeun.pregen.account.domain.dto.NickName
+import org.kkeunkkeun.pregen.account.domain.dto.OauthTokenResponse
 import org.kkeunkkeun.pregen.account.infrastructure.config.AccountProperties
-import org.kkeunkkeun.pregen.account.infrastructure.config.SocialClientProperties
 import org.kkeunkkeun.pregen.account.infrastructure.security.jwt.JwtTokenUtil
 import org.kkeunkkeun.pregen.account.infrastructure.security.jwt.refreshtoken.RefreshTokenService
+import org.kkeunkkeun.pregen.account.infrastructure.security.oauth.OAuth2Attribute
+import org.kkeunkkeun.pregen.account.oauth.service.OAuthService
 import org.kkeunkkeun.pregen.common.service.JsonConvertor
-import org.springframework.http.HttpEntity
-import org.springframework.http.HttpHeaders
-import org.springframework.http.HttpMethod
-import org.springframework.http.MediaType
-import org.springframework.security.core.Authentication
+import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
-import org.springframework.web.client.RestTemplate
 import java.io.File
+import java.time.LocalDateTime
 import java.util.*
 
-@Transactional(readOnly = true)
 @Service
+@Transactional(readOnly = true)
 class AccountService(
     private val accountRepository: AccountRepository,
     private val refreshTokenService: RefreshTokenService,
+    private val oauthService: OAuthService,
 
     private val jwtTokenUtil: JwtTokenUtil,
-    private val restTemplate: RestTemplate,
     private val jsonConvertor: JsonConvertor,
 
     private val accountProperties: AccountProperties,
-    private val socialProperties: SocialClientProperties,
 ) {
 
-    @Transactional
-    fun signUp(email: String, nickName: String, provider: String, role: String, accessToken: String): Account {
+    fun signUp(email: String, nickName: String, provider: String, role: String, socialToken: OauthTokenResponse): Account {
         val account = Account(
             email = email,
             nickName = nickName,
             socialProvider = SocialProvider.isType(provider),
             role = AccountRole.isType(role),
-            socialAccessToken = accessToken,
+            socialAuthToken = SocialAuthToken(
+                socialAccessToken = socialToken.accessToken,
+                socialRefreshToken = socialToken.refreshToken!!,
+                socialAccessTokenExpiresIn = LocalDateTime.now().plusSeconds(socialToken.expiresIn.toLong()),
+                socialRefreshTokenExpiresIn = if (provider == SocialProvider.NAVER.value) null else LocalDateTime.now().plusSeconds(socialToken.refreshTokenExpiresIn!!.toLong())
+            ),
             sessionId = UUID.randomUUID().toString(),
         )
         return accountRepository.save(account)
     }
 
     @Transactional
-    fun logoutAccount(request: HttpServletRequest, authentication: Authentication) {
+    fun loginAccount(code: String, provider: String, state: String?,
+                     response: HttpServletResponse) {
+        val providerType = SocialProvider.isType(provider)
+        val socialAuthToken = oauthService.getSocialToken(code, providerType, state)
+        val userInfo = oauthService.getSocialUserInfo(providerType, socialAuthToken, state)
+        val attribute = OAuth2Attribute.of(providerType, userInfo, generatedNickName())
+
+        var account = accountRepository.findByEmail(attribute.email)
+        if (account != null) {
+            account.updateAuthProfile(attribute.email, socialAuthToken)
+        } else {
+            account = signUp(attribute.email, attribute.nickName, provider, AccountRole.MEMBER.value, socialAuthToken)
+        }
+
+        val (accessToken, refreshToken) = jwtTokenUtil.generateToken(account.email, AccountRole.MEMBER.value)
+        val accessTokenCookie = jwtTokenUtil.generateTokenCookie("accessToken", accessToken)
+        val refreshTokenCookie = jwtTokenUtil.generateTokenCookie("refreshToken", refreshToken)
+        response.addCookie(accessTokenCookie)
+        response.addCookie(refreshTokenCookie)
+    }
+
+    @Transactional
+    fun logoutAccount(request: HttpServletRequest) {
+        val authentication = SecurityContextHolder.getContext().authentication
         if(authentication.principal.equals("anonymousUser")) {
             throw IllegalArgumentException("로그인 상태가 아닙니다.")
         }
         val accessToken = jwtTokenUtil.getTokenFromCookie("accessToken", request)
+        jwtTokenUtil.verifyToken(accessToken)
         refreshTokenService.deleteById(authentication.name)
     }
 
     @Transactional
-    fun reIssueToken(request: HttpServletRequest, response: HttpServletResponse): HttpServletResponse {
+    fun reIssueToken(request: HttpServletRequest, response: HttpServletResponse) {
         val refreshToken = jwtTokenUtil.getTokenFromCookie("refreshToken", request)
         jwtTokenUtil.verifyToken(refreshToken)
         val authentication = jwtTokenUtil.getAuthentication(refreshToken)
@@ -73,14 +99,14 @@ class AccountService(
 
         response.addCookie(accessTokenCookie)
         response.addCookie(refreshTokenCookie)
-        return response
     }
 
+    @Transactional
     fun revokeAccount(request: HttpServletRequest, email: String) {
         val accessToken = jwtTokenUtil.getTokenFromCookie("accessToken", request)
         jwtTokenUtil.verifyToken(accessToken)
         val account = accountRepository.findByEmail(email) ?: throw IllegalArgumentException("존재하지 않는 계정입니다.")
-        sendRevokeRequest(account.socialAccessToken, account.socialProvider)
+        oauthService.sendRevokeRequest(account.socialAuthToken, account.socialProvider)
         deleteMyAccount(account)
         refreshTokenService.deleteById(email)
     }
@@ -106,42 +132,13 @@ class AccountService(
         )
     }
 
-    @Transactional
     fun deleteMyAccount(account: Account) {
         accountRepository.delete(account)
-    }
-
-    fun findByEmail(email: String): Account? {
-        return accountRepository.findByEmail(email)
     }
 
     fun generatedNickName(): String {
         val jsonContent = File(accountProperties.nameJson).readText()
         val nickName = jsonConvertor.readValue(jsonContent, NickName::class.java)
         return "${nickName.first.random().name} ${nickName.last.random().name}"
-    }
-
-    private fun sendRevokeRequest(accessToken: String, provider: SocialProvider) {
-        val httpHeaders = HttpHeaders()
-        httpHeaders.contentType = MediaType.APPLICATION_FORM_URLENCODED
-
-        val revokeUrl = when (provider) {
-            SocialProvider.KAKAO -> {
-                httpHeaders.setBearerAuth(accessToken)
-                socialProperties.kakaoRevokeUrl()
-            }
-            SocialProvider.NAVER -> {
-                socialProperties.naverRevokeUrl(accessToken, SocialProvider.NAVER.value)
-            }
-            SocialProvider.GOOGLE -> {
-                socialProperties.googleRevokeUrl(accessToken)
-            }
-        }
-        val httpEntity: HttpEntity<String> = HttpEntity(revokeUrl, httpHeaders)
-        val response = restTemplate.exchange(revokeUrl, HttpMethod.POST, httpEntity, String::class.java)
-
-        if (!response.statusCode.is2xxSuccessful) {
-            throw IllegalArgumentException("회원 탈퇴에 실패하였습니다. 다시 시도해주십시오.")
-        }
     }
 }
