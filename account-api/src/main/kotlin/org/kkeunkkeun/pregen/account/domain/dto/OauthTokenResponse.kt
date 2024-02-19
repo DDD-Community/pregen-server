@@ -8,7 +8,7 @@ data class OauthTokenResponse(
     @JsonProperty("expires_in")
     val expiresIn: Int,
     @JsonProperty("refresh_token")
-    val refreshToken: String?,
+    val refreshToken: String? = null,
     @JsonProperty("refresh_token_expires_in")
-    val refreshTokenExpiresIn: Int?,
+    val refreshTokenExpiresIn: Int? = null,
 )

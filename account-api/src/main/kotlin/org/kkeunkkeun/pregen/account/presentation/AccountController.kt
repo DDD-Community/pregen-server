@@ -21,7 +21,7 @@ class AccountController(
     fun login(
         @NotNull @RequestParam("code") code: String,
         @NotNull @RequestParam("provider") provider: String,
-        @RequestParam("state") state: String?,
+        @RequestParam("state") state: String? = null,
         response: HttpServletResponse): ResponseEntity<Any> {
         return ResponseEntity.ok().body(accountService.loginAccount(code, provider, state, response))
     }
