@@ -19,6 +19,10 @@ class AccountRepositoryImpl(
         return account.id
     }
 
+    override fun findBySessionId(sessionId: String): Account? {
+        return accountJpaRepository.findBySessionId(sessionId)
+    }
+
     override fun save(account: Account): Account {
         return accountJpaRepository.save(account)
     }

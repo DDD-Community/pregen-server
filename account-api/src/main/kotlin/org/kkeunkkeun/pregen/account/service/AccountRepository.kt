@@ -8,6 +8,8 @@ interface AccountRepository {
 
     fun findIdByEmail(email: String): Long?
 
+    fun findBySessionId(sessionId: String): Account?
+
     fun save(account: Account): Account
 
     fun delete(account: Account)
