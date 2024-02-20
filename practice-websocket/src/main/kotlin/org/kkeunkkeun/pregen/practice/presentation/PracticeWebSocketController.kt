@@ -1,5 +1,6 @@
 package org.kkeunkkeun.pregen.practice.presentation
 
+import org.kkeunkkeun.pregen.practice.service.MessageHandler
 import org.springframework.messaging.handler.annotation.MessageMapping
 import org.springframework.messaging.handler.annotation.Payload
 import org.springframework.messaging.handler.annotation.SendTo
@@ -7,7 +8,9 @@ import org.springframework.messaging.simp.SimpMessageHeaderAccessor
 import org.springframework.stereotype.Controller
 
 @Controller
-class PracticeWebSocketController {
+class PracticeWebSocketController(
+    private val messageHandler: MessageHandler,
+) {
 
     @MessageMapping("/practice/{sessionId}")
     @SendTo("/sub/practice/{sessionId}")
@@ -15,7 +18,7 @@ class PracticeWebSocketController {
         @Payload request: BaseMessage,
         headerAccessor: SimpMessageHeaderAccessor,
     ): BaseMessage {
-        return request
+        return messageHandler.handle(request)
     }
 
     @MessageMapping("/practice/{sessionId}/ping")
