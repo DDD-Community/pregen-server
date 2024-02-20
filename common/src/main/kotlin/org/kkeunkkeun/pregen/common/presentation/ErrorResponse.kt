@@ -1,9 +1,6 @@
 package org.kkeunkkeun.pregen.common.presentation
 
-import org.springframework.web.context.request.RequestContextHolder
-import org.springframework.web.context.request.ServletRequestAttributes
 import java.time.LocalDateTime
-
 
 data class ErrorResponse(
     val timestamp: LocalDateTime,
