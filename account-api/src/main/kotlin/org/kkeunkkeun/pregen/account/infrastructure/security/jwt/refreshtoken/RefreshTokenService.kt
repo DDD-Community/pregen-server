@@ -21,10 +21,17 @@ class RefreshTokenService(
         return savedToken
     }
 
-    fun verifyToken(tokenType: String, refreshToken: String): Boolean {
+    fun verifyToken(tokenType: String, token: String): Boolean {
         return when (tokenType) {
-            "accessToken" -> refreshTokenRepository.findByAccessToken(refreshToken) != null
-            "refreshToken" -> refreshTokenRepository.findByRefreshToken(refreshToken) != null
+            "accessToken" -> {
+                val findToken = refreshTokenRepository.findByAccessToken(token)
+                findToken != null && findToken.accessToken == token
+            }
+            "refreshToken" -> {
+                val findToken = refreshTokenRepository.findByAccessToken(token)
+                findToken != null && findToken.refreshToken == token
+
+            }
             else -> false
         }
     }
