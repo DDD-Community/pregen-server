@@ -34,20 +34,22 @@ class JwtTokenUtil(
         secretKey = Keys.hmacShaKeyFor(decodedKey)
     }
 
+    fun checkTokenFromCookie(tokenType: String, request: HttpServletRequest): Boolean {
+        val cookieHeader = request.getHeader("cookie") ?: return false
+        return cookieHeader.contains(tokenType)
+    }
+
     fun getTokenFromCookie(tokenType: String, request: HttpServletRequest): String {
-        // 'cookie' 헤더 값을 가져옵니다.
         val cookieHeader = request.getHeader("cookie")
             ?: throw IllegalArgumentException("쿠키 헤더가 요청에 존재하지 않습니다.")
 
-        // 쿠키 헤더에서 토큰 타입에 해당하는 값을 파싱
         val tokenValue = cookieHeader
             .split("; ")
-            .map { it.split("=") } // 각 쿠키를 "=" 기호를 사용하여 키와 값으로 분리
-            .firstOrNull { it.first() == tokenType } // 토큰 타입에 해당하는 쌍을 찾음
+            .map { it.split("=") }
+            .firstOrNull { it.first() == tokenType }
             ?.let { it.getOrNull(1) ?: throw IllegalArgumentException("쿠키 값이 '$tokenType'로 올바르게 시작하지 않습니다.") }
             ?: throw IllegalArgumentException("$tokenType 토큰이 쿠키 값에 존재하지 않습니다.")
 
-        // tokenType에 해당하는 토큰 값을 반환합니다.
         return tokenValue
     }
 
