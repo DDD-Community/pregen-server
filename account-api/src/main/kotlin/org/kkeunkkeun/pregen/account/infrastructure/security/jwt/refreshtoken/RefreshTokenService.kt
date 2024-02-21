@@ -30,7 +30,6 @@ class RefreshTokenService(
             "refreshToken" -> {
                 val findToken = refreshTokenRepository.findByAccessToken(token)
                 findToken != null && findToken.refreshToken == token
-
             }
             else -> false
         }
