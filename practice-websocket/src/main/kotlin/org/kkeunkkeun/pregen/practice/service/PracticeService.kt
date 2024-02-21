@@ -5,6 +5,7 @@ import org.kkeunkkeun.pregen.common.infrastructure.RedisService
 import org.kkeunkkeun.pregen.common.presentation.ErrorStatus
 import org.kkeunkkeun.pregen.common.presentation.PregenException
 import org.kkeunkkeun.pregen.practice.infrastructure.SocketProperties
+import org.kkeunkkeun.pregen.practice.presentation.InsertMessage
 import org.springframework.stereotype.Service
 import java.time.Duration
 import java.time.Instant
@@ -16,11 +17,17 @@ class PracticeService(
     private val accountService: AccountService,
 ) {
 
-    fun insertPractice(sessionId: String, notificationStatus: Boolean) {
+    fun insertPractice(sessionId: String, notificationStatus: Boolean): InsertMessage {
         redisService.updateHashField(sessionId, socketProperties.notificationStatus, notificationStatus.toString())
-        redisService.updateHashField(sessionId, socketProperties.slideIndex, "1")
-        redisService.updateHashField(sessionId, socketProperties.accumulatedPresentationTime, null.toString())
+        val slideIndex = redisService.updateHashField(sessionId, socketProperties.slideIndex, "1")
+        val accumulatedPresentationTime = redisService.updateHashField(sessionId, socketProperties.accumulatedPresentationTime, null.toString())
+        val recordCondition = redisService.updateHashField(sessionId, socketProperties.recordCondition, "true")
         startRecording(sessionId)
+
+        return InsertMessage(
+            sessionId, "INSERT",
+            notificationStatus.toString(), slideIndex, accumulatedPresentationTime, recordCondition
+        )
     }
 
     fun updatePractice(sessionId: String, key: String, value: String) {
@@ -81,15 +88,15 @@ class PracticeService(
         // 누적 시간 계산을 위한 변수
         var newAccumulatedTime: Duration = Duration.ZERO
 
-        val startTimeString = getPractice(sessionId, socketProperties.recentPresentationStartTime)
+        val startTimeString = redisService.getHashField(sessionId, socketProperties.recentPresentationStartTime)
         if (startTimeString != null) { // null 체크를 if로 변경
             val startTime = Instant.parse(startTimeString)
             val stopTime = Instant.now()
             val duration = Duration.between(startTime, stopTime)
 
             // 기존에 저장된 누적 시간 가져오기
-            val accumulatedTimeString = getPractice(sessionId, socketProperties.accumulatedPresentationTime)
-            val accumulatedTime = accumulatedTimeString?.let { Duration.parse(it) } ?: Duration.ZERO // 수정된 부분
+            val accumulatedTimeString = redisService.getHashField(sessionId, socketProperties.accumulatedPresentationTime)
+            val accumulatedTime = accumulatedTimeString?.let { Duration.parse(it) } ?: Duration.ZERO
 
             // 새로운 누적 시간 계산
             newAccumulatedTime = accumulatedTime.plus(duration)

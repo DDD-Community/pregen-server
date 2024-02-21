@@ -1,12 +1,14 @@
 package org.kkeunkkeun.pregen.practice.service
 
 import org.kkeunkkeun.pregen.practice.presentation.BaseMessage
+import org.kkeunkkeun.pregen.practice.presentation.InsertMessage
+import org.kkeunkkeun.pregen.practice.presentation.Message
 
 class MessageHandlerImpl(
     private val practiceService: PracticeService,
 ): MessageHandler {
 
-    override fun handle(message: BaseMessage): BaseMessage {
+    override fun handle(message: BaseMessage): Message {
         return when (message.message) {
             "INSERT" -> handleInsert(message.sessionId, message)
             "UPDATE" -> handleUpdate(message.sessionId, message)
@@ -15,10 +17,9 @@ class MessageHandlerImpl(
         }
     }
 
-    private fun handleInsert(sessionId: String, message: BaseMessage): BaseMessage {
+    private fun handleInsert(sessionId: String, message: BaseMessage): InsertMessage {
         val notificationStatus = message.key.toBoolean()
-        practiceService.insertPractice(sessionId, notificationStatus)
-        return BaseMessage(sessionId, "INSERT")
+        return practiceService.insertPractice(sessionId, notificationStatus)
     }
 
     private fun handleUpdate(sessionId: String, message: BaseMessage): BaseMessage {
@@ -28,6 +29,6 @@ class MessageHandlerImpl(
 
     private fun handleGet(sessionId: String, message: BaseMessage): BaseMessage {
         val value = practiceService.getPractice(sessionId, message.key!!)
-        return BaseMessage(sessionId, "GET", value = value)
+        return BaseMessage(sessionId, "GET", message.key, message.value)
     }
 }

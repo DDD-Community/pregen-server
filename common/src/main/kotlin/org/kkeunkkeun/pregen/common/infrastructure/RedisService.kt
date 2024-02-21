@@ -24,16 +24,17 @@ class RedisService(
         redisTemplate.delete(key)
     }
 
-    fun updateHashField(presentationId: String, field: String, value: String) {
-        hashOperations.put("practice:$presentationId", field, value)
+    fun updateHashField(sessionId: String, field: String, value: String): String {
+        hashOperations.put("practice:$sessionId", field, value)
+        return value
     }
 
-    fun getHashField(presentationId: String, field: String): String? {
-        return hashOperations.get("practice:$presentationId", field) ?: throw PregenException(ErrorStatus.HASH_FIELD_NOT_FOUND)
+    fun getHashField(sessionId: String, field: String): String? {
+        return hashOperations.get("practice:$sessionId", field) ?: throw PregenException(ErrorStatus.HASH_FIELD_NOT_FOUND)
     }
 
-    fun getHashTable(presentationId: String): Map<String, String> {
-        val entries = hashOperations.entries("practice:$presentationId")
+    fun getHashTable(sessionId: String): Map<String, String> {
+        val entries = hashOperations.entries("practice:$sessionId")
 
         return if (entries.isEmpty()) {
             throw PregenException(ErrorStatus.HASH_FIELD_NOT_FOUND)
@@ -42,9 +43,9 @@ class RedisService(
         }
     }
 
-    fun deleteAllFields(presentationId: String) {
-        hashOperations.keys("practice:$presentationId").forEach { field ->
-            hashOperations.delete("practice:$presentationId", field)
+    fun deleteAllFields(sessionId: String) {
+        hashOperations.keys("practice:$sessionId").forEach { field ->
+            hashOperations.delete("practice:$sessionId", field)
         }
     }
 }
