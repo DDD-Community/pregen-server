@@ -69,20 +69,20 @@ class OAuthService(
     }
 
     fun sendRevokeRequest(socialAuthToken: SocialAuthToken, provider: SocialProvider) {
-        verifySocialToken(socialAuthToken, provider)
+        val reissueAuthToken = verifyAndReissueSocialToken(socialAuthToken, provider)
         val httpHeaders = HttpHeaders()
         httpHeaders.contentType = MediaType.APPLICATION_FORM_URLENCODED
 
         val revokeUrl = when (provider) {
             SocialProvider.KAKAO -> {
-                httpHeaders.setBearerAuth(socialAuthToken.socialAccessToken)
+                httpHeaders.setBearerAuth(reissueAuthToken.socialAccessToken)
                 socialProperties.kakaoRevokeUrl()
             }
             SocialProvider.NAVER -> {
-                socialProperties.naverRevokeUrl(socialAuthToken.socialAccessToken, SocialProvider.NAVER.value)
+                socialProperties.naverRevokeUrl(reissueAuthToken.socialAccessToken, SocialProvider.NAVER.value)
             }
             SocialProvider.GOOGLE -> {
-                socialProperties.googleRevokeUrl(socialAuthToken.socialAccessToken)
+                socialProperties.googleRevokeUrl(reissueAuthToken.socialAccessToken)
             }
         }
         val httpEntity: HttpEntity<String> = HttpEntity(revokeUrl, httpHeaders)
@@ -93,7 +93,7 @@ class OAuthService(
         }
     }
 
-    fun verifySocialToken(socialAuthToken: SocialAuthToken, provider: SocialProvider): SocialAuthToken {
+    fun verifyAndReissueSocialToken(socialAuthToken: SocialAuthToken, provider: SocialProvider): SocialAuthToken {
         val now = LocalDateTime.now()
         val oauthTokenResponse: OauthTokenResponse
 
