@@ -4,6 +4,7 @@ import jakarta.persistence.*
 import org.kkeunkkeun.pregen.account.domain.dto.OauthTokenResponse
 import org.kkeunkkeun.pregen.account.oauth.domain.SocialAuthToken
 import org.kkeunkkeun.pregen.common.domain.BaseEntity
+import java.util.*
 
 @Entity
 class Account(
@@ -36,11 +37,21 @@ class Account(
         this.email = email
         this.socialAuthToken.updateAccessToken(socialToken.accessToken)
         this.socialAuthToken.updateAccessTokenExpiresIn(socialToken.expiresIn)
-        socialToken.refreshToken?.let { this.socialAuthToken.updateRefreshToken(it) }
-        socialToken.refreshTokenExpiresIn?.let { this.socialAuthToken.updateRefreshTokenExpiresIn(it) }
+        if (socialToken.refreshToken != null) {
+            this.socialAuthToken.updateRefreshToken(socialToken.refreshToken)
+            this.socialAuthToken.updateRefreshTokenExpiresIn(socialToken.refreshTokenExpiresIn!!)
+        }
+    }
+
+    fun updateSocialAuthToken(socialAuthToken: SocialAuthToken) {
+        this.socialAuthToken = socialAuthToken
     }
 
     fun updateNickName(nickName: String) {
         this.nickName = nickName
+    }
+
+    fun updateSessionId(sessionId: String) {
+        this.sessionId = UUID.randomUUID().toString()
     }
 }

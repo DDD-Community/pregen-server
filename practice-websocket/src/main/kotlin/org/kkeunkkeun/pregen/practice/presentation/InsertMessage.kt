@@ -1,8 +1,9 @@
 package org.kkeunkkeun.pregen.practice.presentation
 
-data class BaseMessage(
+data class InsertMessage(
     override val sessionId: String,
     override val message: String,
-    val key: String? = null,
-    val value: String? = null
+    val notificationStatus: String,
+    val slideIndex: String,
+    val recordCondition: String
 ): Message
