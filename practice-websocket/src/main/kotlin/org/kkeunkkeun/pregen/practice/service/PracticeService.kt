@@ -19,14 +19,14 @@ class PracticeService(
 
     fun insertPractice(sessionId: String, notificationStatus: Boolean): InsertMessage {
         redisService.updateHashField(sessionId, socketProperties.notificationStatus, notificationStatus.toString())
+        redisService.updateHashField(sessionId, socketProperties.accumulatedPresentationTime, null.toString())
         val slideIndex = redisService.updateHashField(sessionId, socketProperties.slideIndex, "1")
-        val accumulatedPresentationTime = redisService.updateHashField(sessionId, socketProperties.accumulatedPresentationTime, null.toString())
         val recordCondition = redisService.updateHashField(sessionId, socketProperties.recordCondition, "true")
         startRecording(sessionId)
 
         return InsertMessage(
             sessionId, "INSERT",
-            notificationStatus.toString(), slideIndex, accumulatedPresentationTime, recordCondition
+            notificationStatus.toString(), slideIndex, recordCondition
         )
     }
 

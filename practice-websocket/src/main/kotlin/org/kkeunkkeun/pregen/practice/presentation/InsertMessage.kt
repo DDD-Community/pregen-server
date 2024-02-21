@@ -5,6 +5,5 @@ data class InsertMessage(
     override val message: String,
     val notificationStatus: String,
     val slideIndex: String,
-    val accumulatedPresentationTime: String,
     val recordCondition: String
 ): Message
