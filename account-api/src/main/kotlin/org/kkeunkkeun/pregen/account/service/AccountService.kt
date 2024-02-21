@@ -4,7 +4,6 @@ import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
 import org.kkeunkkeun.pregen.account.domain.Account
 import org.kkeunkkeun.pregen.account.domain.AccountRole
-import org.kkeunkkeun.pregen.account.oauth.domain.SocialAuthToken
 import org.kkeunkkeun.pregen.account.domain.SocialProvider
 import org.kkeunkkeun.pregen.account.domain.dto.AccountResponse
 import org.kkeunkkeun.pregen.account.domain.dto.AccountUpdateRequest
@@ -14,9 +13,11 @@ import org.kkeunkkeun.pregen.account.infrastructure.config.AccountProperties
 import org.kkeunkkeun.pregen.account.infrastructure.security.jwt.JwtTokenUtil
 import org.kkeunkkeun.pregen.account.infrastructure.security.jwt.refreshtoken.RefreshTokenService
 import org.kkeunkkeun.pregen.account.infrastructure.security.oauth.OAuth2Attribute
+import org.kkeunkkeun.pregen.account.oauth.domain.SocialAuthToken
 import org.kkeunkkeun.pregen.account.oauth.service.OAuthService
+import org.kkeunkkeun.pregen.common.presentation.ErrorStatus
+import org.kkeunkkeun.pregen.common.presentation.PregenException
 import org.kkeunkkeun.pregen.common.service.JsonConvertor
-import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.io.File
@@ -76,29 +77,10 @@ class AccountService(
     }
 
     @Transactional
-    fun logoutAccount(request: HttpServletRequest) {
-        val authentication = SecurityContextHolder.getContext().authentication
-        if(authentication.principal.equals("anonymousUser")) {
-            throw IllegalArgumentException("로그인 상태가 아닙니다.")
-        }
+    fun logoutAccount(request: HttpServletRequest, email: String) {
         val accessToken = jwtTokenUtil.getTokenFromCookie("accessToken", request)
         jwtTokenUtil.verifyToken(accessToken)
-        refreshTokenService.deleteById(authentication.name)
-    }
-
-    @Transactional
-    fun reIssueToken(request: HttpServletRequest, response: HttpServletResponse) {
-        val refreshToken = jwtTokenUtil.getTokenFromCookie("refreshToken", request)
-        jwtTokenUtil.verifyToken(refreshToken)
-        val authentication = jwtTokenUtil.getAuthentication(refreshToken)
-        val authorities = authentication.authorities.joinToString(",") { it.authority }
-
-        val jwtToken = jwtTokenUtil.generateToken(authentication.name, authorities)
-        val accessTokenCookie = jwtTokenUtil.generateTokenCookie("accessToken", jwtToken.accessToken)
-        val refreshTokenCookie = jwtTokenUtil.generateTokenCookie("refreshToken", jwtToken.refreshToken)
-
-        response.addCookie(accessTokenCookie)
-        response.addCookie(refreshTokenCookie)
+        refreshTokenService.deleteById(email)
     }
 
     @Transactional
@@ -109,16 +91,6 @@ class AccountService(
         oauthService.sendRevokeRequest(account.socialAuthToken, account.socialProvider)
         deleteMyAccount(account)
         refreshTokenService.deleteById(email)
-    }
-
-
-    fun getMyAccount(email: String): AccountResponse {
-        val account = accountRepository.findByEmail(email) ?: throw IllegalArgumentException("존재하지 않는 계정입니다.")
-        return AccountResponse(
-            email = account.email,
-            nickName = account.nickName,
-            socialProvider = account.socialProvider.value,
-        )
     }
 
     @Transactional
@@ -132,8 +104,44 @@ class AccountService(
         )
     }
 
+    @Transactional
     fun deleteMyAccount(account: Account) {
         accountRepository.delete(account)
+    }
+
+    @Transactional
+    fun updateAccountSessionId(sessionId: String) {
+        val account = accountRepository.findBySessionId(sessionId) ?: throw PregenException(ErrorStatus.DATA_NOT_FOUND)
+        account.updateSessionId(sessionId)
+    }
+
+    @Transactional
+    fun reIssueToken(request: HttpServletRequest, response: HttpServletResponse, email: String) {
+        val refreshToken = jwtTokenUtil.getTokenFromCookie("refreshToken", request)
+        jwtTokenUtil.verifyToken(refreshToken)
+        val account = accountRepository.findByEmail(email) ?: throw IllegalArgumentException("존재하지 않는 계정입니다.")
+        val reissueSocialToken =
+            oauthService.verifyAndReissueSocialToken(account.socialAuthToken, account.socialProvider)
+        account.updateSocialAuthToken(reissueSocialToken)
+
+        val authentication = jwtTokenUtil.getAuthentication(refreshToken)
+        val authorities = authentication.authorities.joinToString(",") { it.authority }
+
+        val jwtToken = jwtTokenUtil.generateToken(authentication.name, authorities)
+        val accessTokenCookie = jwtTokenUtil.generateTokenCookie("accessToken", jwtToken.accessToken)
+        val refreshTokenCookie = jwtTokenUtil.generateTokenCookie("refreshToken", jwtToken.refreshToken)
+
+        response.addCookie(accessTokenCookie)
+        response.addCookie(refreshTokenCookie)
+    }
+
+    fun getMyAccount(email: String): AccountResponse {
+        val account = accountRepository.findByEmail(email) ?: throw IllegalArgumentException("존재하지 않는 계정입니다.")
+        return AccountResponse(
+            email = account.email,
+            nickName = account.nickName,
+            socialProvider = account.socialProvider.value,
+        )
     }
 
     fun generatedNickName(): String {

@@ -36,10 +36,9 @@ class SecurityConfig(
             .authorizeHttpRequests {
                 auth -> auth
                     .requestMatchers(
-                        "/api/account/login",
-                        "/api/accounts/login/**",
-                        "/api/accounts/reissue").permitAll()
-                    .anyRequest().authenticated()
+                        "/api/accounts/login",
+                        "/api/accounts/login/**").hasRole("ANONYMOUS")
+                    .anyRequest().hasRole("MEMBER")
             }
             .headers {
                 headers -> headers.addHeaderWriter(

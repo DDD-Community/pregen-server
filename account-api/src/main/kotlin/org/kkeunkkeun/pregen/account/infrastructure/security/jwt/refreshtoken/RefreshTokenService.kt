@@ -10,6 +10,7 @@ class RefreshTokenService(
 ) {
 
     fun saveTokenInfo(email: String, accessToken: String, refreshToken: String): RefreshToken {
+        refreshTokenRepository.findById(email).ifPresent { refreshTokenRepository.deleteById(email) }
         val savedToken = refreshTokenRepository.save(
             RefreshToken(
                 id = email,
@@ -18,6 +19,20 @@ class RefreshTokenService(
             )
         )
         return savedToken
+    }
+
+    fun verifyToken(tokenType: String, token: String): Boolean {
+        return when (tokenType) {
+            "accessToken" -> {
+                val findToken = refreshTokenRepository.findByAccessToken(token)
+                findToken != null && findToken.accessToken == token
+            }
+            "refreshToken" -> {
+                val findToken = refreshTokenRepository.findByAccessToken(token)
+                findToken != null && findToken.refreshToken == token
+            }
+            else -> false
+        }
     }
 
     fun deleteById(id: String) {

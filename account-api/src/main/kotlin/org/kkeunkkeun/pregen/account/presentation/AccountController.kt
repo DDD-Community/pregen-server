@@ -21,20 +21,23 @@ class AccountController(
     fun login(
         @NotNull @RequestParam("code") code: String,
         @NotNull @RequestParam("provider") provider: String,
-        @RequestParam("state") state: String? = null,
+        @RequestParam("state") state: String?,
         response: HttpServletResponse): ResponseEntity<Any> {
-        return ResponseEntity.ok().body(accountService.loginAccount(code, provider, state, response))
-    }
-
-    @GetMapping("/reissue")
-    fun reissueToken(request: HttpServletRequest, response: HttpServletResponse): ResponseEntity<Unit> {
-        accountService.reIssueToken(request, response)
+        accountService.loginAccount(code, provider, state, response)
         return ResponseEntity.ok().build()
     }
 
-    @PostMapping("/logout")
-    fun logout(request: HttpServletRequest): ResponseEntity<Unit> {
-        accountService.logoutAccount(request)
+    @GetMapping("/reissue")
+    fun reissueToken(request: HttpServletRequest, response: HttpServletResponse,
+                     @AccountEmail email: String): ResponseEntity<Unit> {
+        accountService.reIssueToken(request, response, email)
+        return ResponseEntity.ok().build()
+    }
+
+    @GetMapping("/logout")
+    fun logout(request: HttpServletRequest,
+               @AccountEmail email: String): ResponseEntity<Unit> {
+        accountService.logoutAccount(request, email)
         return ResponseEntity.ok().build()
     }
 
