@@ -28,10 +28,9 @@ class PracticeWebSocketController(
     @MessageMapping("/practice/{sessionId}/ping")
     fun healthCheck(
         @DestinationVariable sessionId: String,
-        @Payload request: BaseMessage,
         headerAccessor: SimpMessageHeaderAccessor,
     ): Message {
-        val baseMessage = BaseMessage(request.sessionId, "HEALTH_CHECK", "Pong!")
+        val baseMessage = BaseMessage(sessionId, "HEALTH_CHECK", "Pong!")
         messageTemplate.convertAndSend("/sub/practice/$sessionId", baseMessage)
         return baseMessage
     }
