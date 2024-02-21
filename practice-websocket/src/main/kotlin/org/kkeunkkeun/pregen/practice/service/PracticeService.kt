@@ -85,26 +85,22 @@ class PracticeService(
     }
 
     private fun calculateAccumulatedPresentationTime(sessionId: String): String {
-        // 누적 시간 계산을 위한 변수
         var newAccumulatedTime: Duration = Duration.ZERO
 
         val startTimeString = redisService.getHashField(sessionId, socketProperties.recentPresentationStartTime)
-        if (startTimeString != null) { // null 체크를 if로 변경
+        if (startTimeString != null) {
             val startTime = Instant.parse(startTimeString)
             val stopTime = Instant.now()
             val duration = Duration.between(startTime, stopTime)
 
-            // 기존에 저장된 누적 시간 가져오기
             val accumulatedTimeString = redisService.getHashField(sessionId, socketProperties.accumulatedPresentationTime)
             val accumulatedTime = accumulatedTimeString?.let { Duration.parse(it) } ?: Duration.ZERO
 
-            // 새로운 누적 시간 계산
             newAccumulatedTime = accumulatedTime.plus(duration)
 
-            // 누적 시간 업데이트
             redisService.updateHashField(sessionId, socketProperties.accumulatedPresentationTime, newAccumulatedTime.toString())
         }
-        // startTimeString이 null인 경우, 이미 초기화된 Duration.ZERO (또는 이전 값)을 반환합니다.
-        return newAccumulatedTime.toString() // 누적 시간 반환
+
+        return newAccumulatedTime.toSeconds().toString()
     }
 }
