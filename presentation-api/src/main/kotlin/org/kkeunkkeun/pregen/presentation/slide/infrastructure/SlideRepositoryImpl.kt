@@ -13,6 +13,10 @@ class SlideRepositoryImpl(
         return slideJpaRepository.findByPracticeId(practiceId)
     }
 
+    override fun findFirstByPracticeId(practiceId: Long): Slide? {
+        return slideJpaRepository.findFirstByPracticeId(practiceId)
+    }
+
     override fun saveAll(slides: List<Slide>) {
         slideJpaRepository.saveAll(slides)
     }

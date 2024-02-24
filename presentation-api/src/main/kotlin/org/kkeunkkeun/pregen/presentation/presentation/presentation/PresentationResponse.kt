@@ -65,7 +65,7 @@ class PresentationResponse {
     ) {
         companion object {
             fun from(slides: List<Slide>): List<SlideDetail> {
-                return slides.map { slide -> SlideDetail(slide.id!!, slide.imageFilePath(), slide.script, slide.memo) }
+                return slides.map { slide -> SlideDetail(slide.id!!, slide.imageFilePath, slide.script, slide.memo) }
             }
         }
     }

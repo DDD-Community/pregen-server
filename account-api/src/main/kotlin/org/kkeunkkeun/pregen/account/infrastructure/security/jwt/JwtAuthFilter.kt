@@ -74,9 +74,6 @@ class JwtAuthFilter(
         } catch (e: PregenException) {
             log.error("Filter error: ${e.message}")
             handleException(request, response, e)
-        } catch (e: Exception) {
-            log.error("Filter error: ${e.message}")
-            handleException(request, response, e, "인증 과정에서 예외가 발생했습니다.")
         }
     }
 

@@ -21,20 +21,27 @@ data class PresentationListResponse(
 
         val timeLimit: PresentationTime,
 
+        val thumbnailPath: String?,
+
         val createdAt: LocalDateTime,
+
+        val modifiedAt: LocalDateTime,
     ) {
 
         companion object {
-            fun from(presentation: Presentation): ListItem {
+            fun from(presentation: Presentation, thumbnailPath: String?): ListItem {
                 val id = presentation.id ?: throw RuntimeException()
                 val createdAt = presentation.createdAt ?: throw RuntimeException()
+                val modifiedAt = presentation.modifiedAt ?: throw RuntimeException()
 
                 return ListItem(
                     id,
                     presentation.title,
                     presentation.getDDay(),
                     PresentationTime.from(presentation.timeLimit),
-                    createdAt
+                    thumbnailPath,
+                    createdAt,
+                    modifiedAt,
                 )
             }
         }
