@@ -22,4 +22,14 @@ class FileController(
         return ResponseEntity.status(CREATED)
             .body(FileResponse.from(fileEntity))
     }
+
+    @PostMapping("/upload/bulk")
+    fun uploadBulkFile(
+        @RequestPart(name = "file") multipartFiles: List<MultipartFile>
+    ): ResponseEntity<FileListResponse> {
+        val fileEntities = fileUploadService.uploadBulk(multipartFiles)
+
+        return ResponseEntity.status(CREATED)
+            .body(FileListResponse.from(fileEntities))
+    }
 }

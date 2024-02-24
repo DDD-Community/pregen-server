@@ -29,7 +29,7 @@ spring:
     password: admin
   jpa:
     hibernate:
-      ddl-auto: create
+      ddl-auto: validate
     properties:
       show_sql: false
       hibernate:
@@ -38,3 +38,4 @@ spring:
 file:
   base-path: ./data
   thumbnail-path: /thumbnails
+  audio-path: /audios
