@@ -3,6 +3,7 @@ package org.kkeunkkeun.pregen.presentation.presentation.presentation
 import org.kkeunkkeun.pregen.presentation.presentation.domain.Presentation
 import org.kkeunkkeun.pregen.presentation.slide.domain.Slide
 import java.lang.RuntimeException
+import java.time.LocalDate
 import java.time.LocalDateTime
 
 class PresentationResponse {
@@ -17,11 +18,13 @@ class PresentationResponse {
 
         val title: String,
 
+        val deadlineDate: LocalDate,
+
         val dDay: Int,
 
-        val timeLimit: Int,
+        val timeLimit: PresentationTime,
 
-        val alertBeforeLimit: Boolean,
+        val alertTime: PresentationTime,
 
         val createdAt: LocalDateTime,
 
@@ -38,9 +41,10 @@ class PresentationResponse {
                 return PresentationDetail(
                     id,
                     presentation.title,
+                    presentation.deadlineDate,
                     presentation.getDDay(),
-                    presentation.timeLimit,
-                    presentation.alertBeforeLimit,
+                    PresentationTime.from(presentation.timeLimit),
+                    PresentationTime.from(presentation.alertTime),
                     createdAt,
                     modifiedAt,
                     SlideDetail.from(slides),
@@ -65,5 +69,4 @@ class PresentationResponse {
             }
         }
     }
-
 }

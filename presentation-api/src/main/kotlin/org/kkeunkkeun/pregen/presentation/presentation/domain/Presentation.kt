@@ -6,6 +6,7 @@ import org.kkeunkkeun.pregen.common.domain.BaseEntity
 import org.kkeunkkeun.pregen.presentation.presentation.domain.PresentationStatus.DELETED
 import org.kkeunkkeun.pregen.presentation.presentation.domain.PresentationStatus.NORMAL
 import org.kkeunkkeun.pregen.presentation.presentation.presentation.PresentationRequest
+import org.kkeunkkeun.pregen.presentation.presentation.presentation.PresentationTime
 import java.time.LocalDate
 import java.time.temporal.ChronoUnit
 
@@ -20,7 +21,7 @@ class Presentation(
 
     timeLimit: Int,
 
-    alertBeforeLimit: Boolean,
+    alertTime: Int,
 ): BaseEntity() {
 
     @Id
@@ -37,7 +38,7 @@ class Presentation(
     var timeLimit: Int = timeLimit
         protected set
 
-    var alertBeforeLimit: Boolean = alertBeforeLimit
+    var alertTime: Int = alertTime
         protected set
 
     @Enumerated(STRING)
@@ -48,7 +49,7 @@ class Presentation(
     companion object {
         fun from(accountId: Long, presentationRequest: PresentationRequest): Presentation {
             return Presentation(accountId, presentationRequest.title, presentationRequest.deadlineDate,
-                presentationRequest.timeLimit, presentationRequest.alertBeforeLimit)
+                presentationRequest.timeLimit.toMinutes(), presentationRequest.alertTime.toMinutes())
         }
     }
 
@@ -57,10 +58,6 @@ class Presentation(
         val dDay = ChronoUnit.DAYS.between(today, deadlineDate)
 
         return dDay.toInt()
-    }
-
-    fun getTimeLimitAsMinute(): Int {
-        return timeLimit / 60
     }
 
     fun isNotOwnerOfPresentation(accountId: Long): Boolean {
@@ -73,11 +70,11 @@ class Presentation(
         }
     }
 
-    fun update(title: String, deadlineDate: LocalDate, timeLimit: Int, alertBeforeLimit: Boolean) {
+    fun update(title: String, deadlineDate: LocalDate, timeLimit: PresentationTime, alertTime: PresentationTime) {
         this.title = title
         this.deadlineDate = deadlineDate
-        this.timeLimit = timeLimit
-        this.alertBeforeLimit = alertBeforeLimit
+        this.timeLimit = timeLimit.toMinutes()
+        this.alertTime = alertTime.toMinutes()
     }
 
     fun delete() {
