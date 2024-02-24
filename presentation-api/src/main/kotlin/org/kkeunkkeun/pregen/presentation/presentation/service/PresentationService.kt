@@ -15,6 +15,7 @@ class PresentationService(
     private val presentationRepository: PresentationRepository,
     private val accountRepository: AccountRepository,
     private val presentationAccessChecker: PresentationAccessChecker,
+    private val thumbnailResolver: PresentationThumbnailResolver
 ) {
 
     fun findListByAccountId(email: String, pageable: Pageable): Page<PresentationListResponse.ListItem> {
@@ -63,6 +64,7 @@ class PresentationService(
     }
 
     private fun generateListItem(presentation: Presentation): PresentationListResponse.ListItem {
-        return PresentationListResponse.ListItem.from(presentation)
+        val thumbnailPath = thumbnailResolver.findThumbnail(presentation.id!!)
+        return PresentationListResponse.ListItem.from(presentation, thumbnailPath)
     }
 }

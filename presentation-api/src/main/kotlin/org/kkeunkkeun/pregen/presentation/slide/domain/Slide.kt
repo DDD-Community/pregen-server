@@ -29,14 +29,13 @@ class Slide(
     var practiceId: Long? = practiceId
         protected set
 
+    val imageFilePath: String?
+        get() = imageFile?.absolutePath
+
     companion object {
         fun from(practiceId: Long, imageFile: File?, request: PresentationRequest.SlideRequest): Slide {
             return Slide(practiceId, imageFile, request.script, request.memo)
         }
-    }
-
-    fun imageFilePath(): String? {
-        return imageFile?.absolutePath
     }
 
     fun unmap() {

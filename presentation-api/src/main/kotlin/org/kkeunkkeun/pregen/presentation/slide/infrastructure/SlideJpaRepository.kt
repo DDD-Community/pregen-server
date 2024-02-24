@@ -6,4 +6,6 @@ import org.springframework.data.jpa.repository.JpaRepository
 interface SlideJpaRepository: JpaRepository<Slide, Long> {
 
     fun findByPracticeId(practiceId: Long): List<Slide>
+
+    fun findFirstByPracticeId(practiceId: Long): Slide?
 }

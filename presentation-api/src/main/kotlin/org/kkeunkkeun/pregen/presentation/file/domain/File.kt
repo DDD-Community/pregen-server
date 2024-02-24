@@ -36,7 +36,7 @@ class File(
             return File(
                 null,
                 fileType = IMAGE,
-                path = path,
+                path = path.replace(".", ""),
                 originalName = originalName,
                 generatedName = generatedName,
             )

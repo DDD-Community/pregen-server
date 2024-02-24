@@ -6,5 +6,7 @@ interface SlideRepository {
 
     fun findByPracticeId(practiceId: Long): List<Slide>
 
+    fun findFirstByPracticeId(practiceId: Long): Slide?
+
     fun saveAll(slides: List<Slide>)
 }

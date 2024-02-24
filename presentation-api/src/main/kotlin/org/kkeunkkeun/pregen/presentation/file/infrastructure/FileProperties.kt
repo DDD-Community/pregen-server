@@ -10,5 +10,4 @@ data class FileProperties(
     val fullThumbnailPath: String
         get() = "$basePath/$thumbnailPath"
             .replace("//", "/")
-            .replace(".", "")
 }
