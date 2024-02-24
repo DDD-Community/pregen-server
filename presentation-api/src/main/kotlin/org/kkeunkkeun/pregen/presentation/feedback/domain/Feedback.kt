@@ -16,6 +16,6 @@ class Feedback(
 
     val practiceId: Long,
 
-    @Column(columnDefinition = "smallint(5) unsigned")
+    @Column(columnDefinition = "smallint unsigned")
     val score: Int
 )
