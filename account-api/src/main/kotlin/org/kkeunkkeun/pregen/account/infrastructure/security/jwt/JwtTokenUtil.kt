@@ -7,8 +7,10 @@ import jakarta.servlet.http.HttpServletRequest
 import org.kkeunkkeun.pregen.account.domain.AccountRole
 import org.kkeunkkeun.pregen.account.infrastructure.AccountJpaRepository
 import org.kkeunkkeun.pregen.account.infrastructure.config.AccountProperties
+import org.kkeunkkeun.pregen.account.infrastructure.security.exception.FilterException
 import org.kkeunkkeun.pregen.account.infrastructure.security.jwt.dto.JwtTokenResponse
 import org.kkeunkkeun.pregen.account.infrastructure.security.jwt.refreshtoken.RefreshTokenService
+import org.kkeunkkeun.pregen.common.presentation.ErrorStatus
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
 import org.springframework.security.core.Authentication
 import org.springframework.security.core.authority.SimpleGrantedAuthority
@@ -41,14 +43,14 @@ class JwtTokenUtil(
 
     fun getTokenFromCookie(tokenType: String, request: HttpServletRequest): String {
         val cookieHeader = request.getHeader("cookie")
-            ?: throw IllegalArgumentException("쿠키 헤더가 요청에 존재하지 않습니다.")
+            ?: throw FilterException(ErrorStatus.UNAUTHORIZED, "헤더에 쿠키가 존재하지 않습니다.")
 
         val tokenValue = cookieHeader
             .split("; ")
             .map { it.split("=") }
             .firstOrNull { it.first() == tokenType }
-            ?.let { it.getOrNull(1) ?: throw IllegalArgumentException("쿠키 값이 '$tokenType'로 올바르게 시작하지 않습니다.") }
-            ?: throw IllegalArgumentException("$tokenType 토큰이 쿠키 값에 존재하지 않습니다.")
+            ?.let { it.getOrNull(1) ?: throw FilterException(ErrorStatus.UNAUTHORIZED, "헤더에 토큰이 존재하지 않습니다.") }
+            ?: throw FilterException(ErrorStatus.UNAUTHORIZED, "헤더에 토큰이 존재하지 않습니다.")
 
         return tokenValue
     }
@@ -100,10 +102,10 @@ class JwtTokenUtil(
                 .parseClaimsJws(token)
             return claims.body.expiration.after(Date())
         } catch (e: ExpiredJwtException) {
-            throw IllegalArgumentException("Expired access token")
+            throw FilterException(ErrorStatus.INVALID_TOKEN, "토큰이 만료되었습니다.")
         } catch (e: Exception) {
             when (e) {
-                is JwtException, is IllegalArgumentException -> throw IllegalArgumentException("Invalid access token")
+                is JwtException, is IllegalArgumentException -> throw FilterException(ErrorStatus.INVALID_TOKEN, "유효하지 않은 토큰입니다.")
                 else -> throw e
             }
         }
@@ -122,8 +124,8 @@ class JwtTokenUtil(
     }
 
     fun getAuthentication(accessToken: String): Authentication {
-        val findAccount = (accountJpaRepository.findByEmail(getUid(accessToken))
-            ?: throw IllegalArgumentException("존재하지 않는 계정입니다."))
+        val findAccount = accountJpaRepository.findByEmail(getUid(accessToken))
+            ?: throw FilterException(ErrorStatus.UNAUTHORIZED, "존재하지 않는 계정입니다.")
         val user: UserDetails = User.builder()
             .username(findAccount.email)
             .password("")
