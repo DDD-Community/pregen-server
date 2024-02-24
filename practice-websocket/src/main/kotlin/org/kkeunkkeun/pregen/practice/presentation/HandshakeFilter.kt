@@ -12,7 +12,7 @@ import org.kkeunkkeun.pregen.account.service.AccountRepository
 import org.kkeunkkeun.pregen.common.presentation.ErrorResponse
 import org.kkeunkkeun.pregen.common.presentation.ErrorStatus
 import org.kkeunkkeun.pregen.common.presentation.PregenException
-import org.kkeunkkeun.pregen.practice.domain.Constant.Companion.SESSION_ID_HEADER_NAME
+import org.kkeunkkeun.pregen.common.domain.Constant.Companion.SESSION_ID_HEADER_NAME
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.http.HttpStatus

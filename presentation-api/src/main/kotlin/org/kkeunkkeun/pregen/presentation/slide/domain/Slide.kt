@@ -36,7 +36,7 @@ class Slide(
     }
 
     fun imageFilePath(): String? {
-        return imageFile?.absolutePath()
+        return imageFile?.absolutePath
     }
 
     fun unmap() {
