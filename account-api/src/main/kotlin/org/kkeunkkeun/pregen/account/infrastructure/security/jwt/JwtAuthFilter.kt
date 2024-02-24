@@ -67,9 +67,9 @@ class JwtAuthFilter(
                     val authentication = jwtTokenUtil.getAuthentication(accessToken)
                     SecurityContextHolder.getContext().authentication = authentication
                 }
-
-                filterChain.doFilter(request, response)
             }
+
+            filterChain.doFilter(request, response)
         } catch (e: FilterException) {
             log.error("Filter error: ${e.message}")
             handleException(request, response, e)
