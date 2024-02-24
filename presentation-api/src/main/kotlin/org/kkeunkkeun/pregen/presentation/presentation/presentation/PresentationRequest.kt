@@ -13,11 +13,10 @@ data class PresentationRequest(
     @field:FutureOrPresent
     val deadlineDate: LocalDate,
 
-    @field:Min(1)
-    val timeLimit: Int,
-
     @field:NotNull
-    val alertBeforeLimit: Boolean,
+    val timeLimit: PresentationTime,
+
+    val alertTime: PresentationTime,
 
     @field:Size(min = 1)
     val slides: List<SlideRequest>,

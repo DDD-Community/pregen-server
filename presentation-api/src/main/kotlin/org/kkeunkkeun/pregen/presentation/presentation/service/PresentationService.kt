@@ -47,7 +47,7 @@ class PresentationService(
     @Transactional
     fun update(email: String, presentationId: Long, request: PresentationRequest): Long {
         val presentation = this.findById(email, presentationId)
-        presentation.update(request.title, request.deadlineDate, request.timeLimit, request.alertBeforeLimit)
+        presentation.update(request.title, request.deadlineDate, request.timeLimit, request.alertTime)
 
         return presentation.id!!
     }

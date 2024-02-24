@@ -19,7 +19,7 @@ data class PresentationListResponse(
 
         val dDay: Int,
 
-        val timeLimitAsMinute: Int,
+        val timeLimit: PresentationTime,
 
         val createdAt: LocalDateTime,
     ) {
@@ -33,7 +33,7 @@ data class PresentationListResponse(
                     id,
                     presentation.title,
                     presentation.getDDay(),
-                    presentation.getTimeLimitAsMinute(),
+                    PresentationTime.from(presentation.timeLimit),
                     createdAt
                 )
             }
