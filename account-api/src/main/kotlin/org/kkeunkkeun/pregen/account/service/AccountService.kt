@@ -149,4 +149,10 @@ class AccountService(
         val nickName = jsonConvertor.readValue(jsonContent, NickName::class.java)
         return "${nickName.first.random().name} ${nickName.last.random().name}"
     }
+
+    fun deactivateNextSlideModal(email: String) {
+        accountRepository.findByEmail(email)
+            ?.deactivateNextSlideModal()
+            ?: throw IllegalArgumentException("존재하지 않는 계정입니다.")
+    }
 }

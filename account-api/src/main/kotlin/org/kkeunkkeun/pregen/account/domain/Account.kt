@@ -1,6 +1,7 @@
 package org.kkeunkkeun.pregen.account.domain
 
 import jakarta.persistence.*
+import org.hibernate.annotations.ColumnDefault
 import org.kkeunkkeun.pregen.account.domain.dto.OauthTokenResponse
 import org.kkeunkkeun.pregen.account.oauth.domain.SocialAuthToken
 import org.kkeunkkeun.pregen.common.domain.BaseEntity
@@ -28,6 +29,10 @@ class Account(
     @Column(nullable = false)
     var sessionId: String,
 
+    @Column(nullable = false)
+    @ColumnDefault("true")
+    var activateNextSlideModal: Boolean = true,
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     val id: Long? = null,
@@ -53,5 +58,9 @@ class Account(
 
     fun updateSessionId(sessionId: String) {
         this.sessionId = UUID.randomUUID().toString()
+    }
+
+    fun deactivateNextSlideModal() {
+        this.activateNextSlideModal = false
     }
 }

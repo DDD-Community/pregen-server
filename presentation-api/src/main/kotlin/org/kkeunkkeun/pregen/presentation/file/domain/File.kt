@@ -2,6 +2,7 @@ package org.kkeunkkeun.pregen.presentation.file.domain
 
 import jakarta.persistence.*
 import jakarta.persistence.EnumType.STRING
+import org.kkeunkkeun.pregen.common.domain.BaseEntity
 import org.kkeunkkeun.pregen.presentation.file.domain.FileType.IMAGE
 import org.springframework.web.multipart.MultipartFile
 
@@ -23,7 +24,7 @@ class File(
     val originalName: String,
 
     val generatedName: String
-) {
+): BaseEntity() {
 
     val absolutePath: String
         get() = "$path/$generatedName"

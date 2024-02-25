@@ -21,7 +21,7 @@ class Presentation(
 
     timeLimit: Int,
 
-    alertTime: Int,
+    alertTime: Int? = null,
 ): BaseEntity() {
 
     @Id
@@ -38,7 +38,7 @@ class Presentation(
     var timeLimit: Int = timeLimit
         protected set
 
-    var alertTime: Int = alertTime
+    var alertTime: Int? = alertTime
         protected set
 
     @Enumerated(STRING)
@@ -49,7 +49,7 @@ class Presentation(
     companion object {
         fun from(accountId: Long, presentationRequest: PresentationRequest): Presentation {
             return Presentation(accountId, presentationRequest.title, presentationRequest.deadlineDate,
-                presentationRequest.timeLimit.toMinutes(), presentationRequest.alertTime.toMinutes())
+                presentationRequest.timeLimit.toMinutes(), presentationRequest.alertTime?.toMinutes())
         }
     }
 
@@ -70,11 +70,11 @@ class Presentation(
         }
     }
 
-    fun update(title: String, deadlineDate: LocalDate, timeLimit: PresentationTime, alertTime: PresentationTime) {
+    fun update(title: String, deadlineDate: LocalDate, timeLimit: PresentationTime, alertTime: PresentationTime?) {
         this.title = title
         this.deadlineDate = deadlineDate
         this.timeLimit = timeLimit.toMinutes()
-        this.alertTime = alertTime.toMinutes()
+        this.alertTime = alertTime?.toMinutes()
     }
 
     fun delete() {

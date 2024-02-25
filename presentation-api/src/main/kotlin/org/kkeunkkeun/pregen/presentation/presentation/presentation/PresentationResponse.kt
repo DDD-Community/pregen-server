@@ -24,7 +24,7 @@ class PresentationResponse {
 
         val timeLimit: PresentationTime,
 
-        val alertTime: PresentationTime,
+        val alertTime: PresentationTime?,
 
         val createdAt: LocalDateTime,
 
@@ -35,7 +35,7 @@ class PresentationResponse {
         companion object {
             fun from(presentation: Presentation, slides: List<Slide>): PresentationDetail {
                 val id = presentation.id ?: throw RuntimeException()
-                val createdAt = presentation.createdAt ?: throw RuntimeException()
+                val createdAt = presentation.createdAt
                 val modifiedAt = presentation.modifiedAt ?: throw RuntimeException()
 
                 return PresentationDetail(
@@ -44,7 +44,7 @@ class PresentationResponse {
                     presentation.deadlineDate,
                     presentation.getDDay(),
                     PresentationTime.from(presentation.timeLimit),
-                    PresentationTime.from(presentation.alertTime),
+                    presentation.alertTime?.let { PresentationTime.from(it) },
                     createdAt,
                     modifiedAt,
                     SlideDetail.from(slides),
