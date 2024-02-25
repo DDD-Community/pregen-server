@@ -5,6 +5,7 @@ import jakarta.persistence.Entity
 import jakarta.persistence.GeneratedValue
 import jakarta.persistence.GenerationType
 import jakarta.persistence.Id
+import org.kkeunkkeun.pregen.common.domain.BaseEntity
 
 @Entity
 class Feedback(
@@ -18,4 +19,4 @@ class Feedback(
 
     @Column(columnDefinition = "smallint unsigned")
     val score: Int
-)
+): BaseEntity()

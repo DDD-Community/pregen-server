@@ -31,7 +31,7 @@ data class PresentationListResponse(
         companion object {
             fun from(presentation: Presentation, thumbnailPath: String?): ListItem {
                 val id = presentation.id ?: throw RuntimeException()
-                val createdAt = presentation.createdAt ?: throw RuntimeException()
+                val createdAt = presentation.createdAt
                 val modifiedAt = presentation.modifiedAt ?: throw RuntimeException()
 
                 return ListItem(
