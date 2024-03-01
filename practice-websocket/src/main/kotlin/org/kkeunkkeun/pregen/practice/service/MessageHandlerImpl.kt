@@ -3,7 +3,9 @@ package org.kkeunkkeun.pregen.practice.service
 import org.kkeunkkeun.pregen.practice.presentation.BaseMessage
 import org.kkeunkkeun.pregen.practice.presentation.InsertMessage
 import org.kkeunkkeun.pregen.practice.presentation.Message
+import org.springframework.stereotype.Service
 
+@Service
 class MessageHandlerImpl(
     private val practiceService: PracticeService,
 ): MessageHandler {
@@ -29,6 +31,6 @@ class MessageHandlerImpl(
 
     private fun handleGet(sessionId: String, message: BaseMessage): BaseMessage {
         val value = practiceService.getPractice(sessionId, message.key!!)
-        return BaseMessage(sessionId, "GET", message.key, message.value)
+        return BaseMessage(sessionId, "GET", message.key, value)
     }
 }

@@ -36,6 +36,7 @@ class SecurityConfig(
             .authorizeHttpRequests {
                 auth -> auth
                     .requestMatchers("/error").permitAll()
+                    .requestMatchers("/ws/**").permitAll()
                     .requestMatchers(
                         "/api/accounts/login",
                         "/api/accounts/login/**").hasRole("ANONYMOUS")

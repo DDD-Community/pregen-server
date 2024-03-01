@@ -13,9 +13,9 @@ import java.time.Instant
 @Service
 class PracticeService(
     private val redisService: RedisService,
-    private val socketProperties: SocketProperties,
     private val accountService: AccountService,
 ) {
+    private val socketProperties = SocketProperties()
 
     fun insertPractice(sessionId: String, notificationStatus: Boolean): InsertMessage {
         redisService.updateHashField(sessionId, socketProperties.notificationStatus, notificationStatus.toString())
