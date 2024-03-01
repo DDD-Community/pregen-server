@@ -1,6 +1,5 @@
 package org.kkeunkkeun.pregen.practice.presentation
 
-import org.kkeunkkeun.pregen.account.service.AccountService
 import org.kkeunkkeun.pregen.practice.service.PracticeService
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
