@@ -152,6 +152,7 @@ class AccountService(
         return "${nickName.first.random().name} ${nickName.last.random().name}"
     }
 
+    @Transactional
     fun deactivateNextSlideModal(email: String) {
         accountRepository.findByEmail(email)
             ?.deactivateNextSlideModal()
