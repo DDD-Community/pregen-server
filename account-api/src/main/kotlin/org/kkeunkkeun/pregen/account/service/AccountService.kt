@@ -5,10 +5,7 @@ import jakarta.servlet.http.HttpServletResponse
 import org.kkeunkkeun.pregen.account.domain.Account
 import org.kkeunkkeun.pregen.account.domain.AccountRole
 import org.kkeunkkeun.pregen.account.domain.SocialProvider
-import org.kkeunkkeun.pregen.account.domain.dto.AccountResponse
-import org.kkeunkkeun.pregen.account.domain.dto.AccountUpdateRequest
-import org.kkeunkkeun.pregen.account.domain.dto.NickName
-import org.kkeunkkeun.pregen.account.domain.dto.OauthTokenResponse
+import org.kkeunkkeun.pregen.account.domain.dto.*
 import org.kkeunkkeun.pregen.account.infrastructure.config.AccountProperties
 import org.kkeunkkeun.pregen.account.infrastructure.security.jwt.JwtTokenUtil
 import org.kkeunkkeun.pregen.account.infrastructure.security.jwt.refreshtoken.RefreshTokenService
@@ -144,9 +141,9 @@ class AccountService(
         )
     }
 
-    fun getSessionId(email: String): String {
+    fun getSessionId(email: String): SessionIdResponse {
         val account = accountRepository.findByEmail(email) ?: throw IllegalArgumentException("존재하지 않는 계정입니다.")
-        return account.sessionId
+        return SessionIdResponse(account.sessionId)
     }
 
     fun generatedNickName(): String {
