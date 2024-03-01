@@ -10,7 +10,7 @@ class Constant {
 
         val ALLOWED_IMAGE_FILE_EXTENSIONS = setOf("image/jpeg", "image/png")
 
-        val ALLOWED_AUDIO_FILE_EXTENSIONS = setOf("audio/mpeg")
+        val ALLOWED_AUDIO_FILE_EXTENSIONS = setOf("audio/mpeg", "audio/mp3")
 
         val ALLOWED_FILE_EXTENSIONS = ALLOWED_AUDIO_FILE_EXTENSIONS + ALLOWED_IMAGE_FILE_EXTENSIONS
     }
