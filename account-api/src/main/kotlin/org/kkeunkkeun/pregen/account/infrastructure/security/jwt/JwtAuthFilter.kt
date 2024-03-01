@@ -7,9 +7,7 @@ import jakarta.servlet.http.HttpServletResponse
 import org.kkeunkkeun.pregen.account.infrastructure.security.exception.FilterException
 import org.kkeunkkeun.pregen.account.infrastructure.security.exception.FilterExceptionResponse
 import org.kkeunkkeun.pregen.account.infrastructure.security.jwt.refreshtoken.RefreshTokenService
-import org.kkeunkkeun.pregen.common.presentation.ErrorResponse
 import org.kkeunkkeun.pregen.common.presentation.ErrorStatus
-import org.kkeunkkeun.pregen.common.presentation.PregenException
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.http.HttpStatus
@@ -34,6 +32,11 @@ class JwtAuthFilter(
         filterChain: FilterChain
     ) {
         try {
+            if (request.requestURI.contains("/ws")) {
+                filterChain.doFilter(request, response)
+                return
+            }
+
             if (request.requestURI.contains("login")) {
                 val isToken = jwtTokenUtil.checkTokenFromCookie("accessToken", request)
                 if (isToken) {
@@ -71,9 +74,6 @@ class JwtAuthFilter(
 
             filterChain.doFilter(request, response)
         } catch (e: FilterException) {
-            log.error("Filter error: ${e.message}")
-            handleException(request, response, e)
-        } catch (e: Exception) {
             log.error("Filter error: ${e.message}")
             handleException(request, response, e)
         }

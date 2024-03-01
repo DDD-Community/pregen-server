@@ -144,6 +144,11 @@ class AccountService(
         )
     }
 
+    fun getSessionId(email: String): String {
+        val account = accountRepository.findByEmail(email) ?: throw IllegalArgumentException("존재하지 않는 계정입니다.")
+        return account.sessionId
+    }
+
     fun generatedNickName(): String {
         val jsonContent = File(accountProperties.nameJson).readText()
         val nickName = jsonConvertor.readValue(jsonContent, NickName::class.java)

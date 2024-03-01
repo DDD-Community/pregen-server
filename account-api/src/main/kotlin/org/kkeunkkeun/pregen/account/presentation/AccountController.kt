@@ -58,4 +58,9 @@ class AccountController(
                         @AccountEmail email: String): ResponseEntity<AccountResponse> {
         return ResponseEntity.ok().body(accountService.updateMyAccount(email, request))
     }
+
+    @GetMapping("/sessionId")
+    fun getAccountSessionId(@AccountEmail email: String): ResponseEntity<String> {
+        return ResponseEntity.ok().body(accountService.getSessionId(email));
+    }
 }
