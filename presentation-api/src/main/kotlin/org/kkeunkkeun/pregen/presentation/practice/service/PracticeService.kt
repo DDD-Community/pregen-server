@@ -17,6 +17,10 @@ class PracticeService(
         return practiceRepository.findLatestByPresentationId(presentationId)
     }
 
+    fun findLatestByAccount(accountId: Long): Practice? {
+        return practiceRepository.findLatestByAccountId(accountId)
+    }
+
     @Transactional
     fun save(presentation: Presentation): Long {
         val practice = Practice(

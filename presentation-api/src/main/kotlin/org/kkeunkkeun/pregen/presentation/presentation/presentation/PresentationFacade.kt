@@ -1,5 +1,6 @@
 package org.kkeunkkeun.pregen.presentation.presentation.presentation
 
+import org.kkeunkkeun.pregen.account.service.AccountRepository
 import org.kkeunkkeun.pregen.presentation.practice.service.PracticeService
 import org.kkeunkkeun.pregen.presentation.presentation.service.PresentationService
 import org.kkeunkkeun.pregen.presentation.slide.service.SlideService
@@ -12,6 +13,7 @@ class PresentationFacade(
     private val presentationService: PresentationService,
     private val practiceService: PracticeService,
     private val slideService: SlideService,
+    private val accountRepository: AccountRepository,
 ) {
 
     fun readPresentationDetail(email: String, presentationId: Long): PresentationResponse.PresentationDetail {
@@ -20,6 +22,15 @@ class PresentationFacade(
         val slides = slideService.findByPracticeId(practice.id!!)
 
         return PresentationResponse.PresentationDetail.from(presentation, slides)
+    }
+
+    fun findLatestPracticedPresentation(email: String): PresentationListResponse.ListItem? {
+        val accountId = accountRepository.findIdByEmail(email) ?: throw IllegalStateException()
+        val practice = practiceService.findLatestByAccount(accountId) ?: return null
+
+        val presentation = practice.let { presentationService.findById(email, it.presentationId) }
+
+        return presentationService.generateListItem(presentation)
     }
 
     @Transactional

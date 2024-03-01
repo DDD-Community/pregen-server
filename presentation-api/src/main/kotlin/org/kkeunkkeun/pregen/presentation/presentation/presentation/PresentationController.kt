@@ -42,6 +42,15 @@ class PresentationController(
             .body(responseBody)
     }
 
+    @GetMapping("/latest")
+    fun getLatestPresentation(@AccountEmail email: String): ResponseEntity<PresentationListResponse.ListItem> {
+        val responseBody = presentationFacade.findLatestPracticedPresentation(email)
+            ?: return ResponseEntity.status(HttpStatus.NO_CONTENT).build()
+
+        return ResponseEntity.status(OK)
+            .body(responseBody)
+    }
+
     @PostMapping
     fun registerPresentation(
         @AccountEmail email: String,

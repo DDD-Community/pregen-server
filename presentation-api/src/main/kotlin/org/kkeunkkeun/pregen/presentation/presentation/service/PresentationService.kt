@@ -63,7 +63,7 @@ class PresentationService(
             .delete()
     }
 
-    private fun generateListItem(presentation: Presentation): PresentationListResponse.ListItem {
+    fun generateListItem(presentation: Presentation): PresentationListResponse.ListItem {
         val thumbnailPath = thumbnailResolver.findThumbnail(presentation.id!!)
         return PresentationListResponse.ListItem.from(presentation, thumbnailPath)
     }
