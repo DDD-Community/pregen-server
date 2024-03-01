@@ -7,3 +7,6 @@ spring:
       host: ${REDIS_HOST:localhost}
       port: 6379
       password: 1234
+
+webhook:
+  url: ENC(fk3pLtXgq/5i3ixccF7FOfzjEmeXq/HI09Uipxsi2zbjINeCwqh5hPZM1Bw8ZSp8cqx8H2cj879dbSlX3VP/iN96QOG3MkGvnI3C8ThcBuAsRRItd+eu5AEFJSaAz8BP9WsJ1YI+nJJb3mpsVbk3DN/j/Ub/fFfZwaDB82ojxnt2z2KlpZ6A2g==)
