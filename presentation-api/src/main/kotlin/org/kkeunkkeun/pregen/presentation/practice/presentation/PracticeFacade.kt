@@ -3,7 +3,9 @@ package org.kkeunkkeun.pregen.presentation.practice.presentation
 import org.kkeunkkeun.pregen.account.service.AccountRepository
 import org.kkeunkkeun.pregen.presentation.memorizationsentence.service.MemorizationSentenceRepository
 import org.kkeunkkeun.pregen.presentation.memorizationsentence.service.MemorizationSentenceService
+import org.kkeunkkeun.pregen.presentation.practice.domain.Practice
 import org.kkeunkkeun.pregen.presentation.practice.service.PracticeService
+import org.kkeunkkeun.pregen.presentation.presentation.domain.Presentation
 import org.kkeunkkeun.pregen.presentation.presentation.service.PresentationService
 import org.kkeunkkeun.pregen.presentation.slide.domain.SlideAggregate
 import org.kkeunkkeun.pregen.presentation.slide.service.SlideService
@@ -20,9 +22,28 @@ class PracticeFacade(
     private val memorizationSentenceService: MemorizationSentenceService,
 ) {
 
+    @Transactional
+    fun startPractice(email: String, presentationId: Long): PracticeResponse {
+        val presentation = presentationService.findById(email, presentationId)
+        val practice = practiceService.findLatest(presentationId)
+
+        practice.start()
+
+        return getPracticeDetail(practice, email, presentation)
+    }
+
     fun getPracticeDetail(email: String, presentationId: Long): PracticeResponse {
         val presentation = presentationService.findById(email, presentationId)
         val practice = practiceService.findLatest(presentationId)
+
+        return getPracticeDetail(practice, email, presentation)
+    }
+
+    private fun getPracticeDetail(
+        practice: Practice,
+        email: String,
+        presentation: Presentation,
+    ): PracticeResponse {
         val slides = slideService.findAggregateByPracticeId(practice.id!!)
 
         val activateNextSlideModal = accountRepository.findByEmail(email)

@@ -30,6 +30,17 @@ class PracticeController(
             .body(result)
     }
 
+    @GetMapping("/presentation/{presentationId}/start")
+    fun startPractice(
+        @AccountEmail email: String,
+        @PathVariable presentationId: Long,
+    ): ResponseEntity<PracticeResponse> {
+        val result = practiceFacade.startPractice(email, presentationId)
+
+        return ResponseEntity.status(OK)
+            .body(result)
+    }
+
     @PatchMapping("/presentation/{presentationId}")
     fun updatePractice(
         @AccountEmail email: String,

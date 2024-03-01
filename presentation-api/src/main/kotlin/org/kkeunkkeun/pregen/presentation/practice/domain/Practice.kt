@@ -3,6 +3,7 @@ package org.kkeunkkeun.pregen.presentation.practice.domain
 import jakarta.persistence.*
 import org.kkeunkkeun.pregen.common.domain.BaseEntity
 import org.kkeunkkeun.pregen.presentation.practice.presentation.PracticeMode
+import java.time.LocalDateTime
 
 @Entity
 class Practice(
@@ -30,8 +31,15 @@ class Practice(
     var practiceTime: Int? = practiceTime
         protected set
 
+    var startedAt: LocalDateTime? = null
+        protected set
+
     fun updateMode(mode: PracticeMode) {
         this.mode = mode
+    }
+
+    fun start() {
+        this.startedAt = LocalDateTime.now()
     }
 
     fun done(practiceTime: Int) {
