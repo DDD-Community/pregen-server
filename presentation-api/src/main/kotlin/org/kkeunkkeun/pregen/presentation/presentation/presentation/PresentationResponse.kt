@@ -57,6 +57,8 @@ class PresentationResponse {
 
         val id: Long,
 
+        val imageFileId: Long?,
+
         val imageFilePath: String?,
 
         val script: String,
@@ -65,7 +67,15 @@ class PresentationResponse {
     ) {
         companion object {
             fun from(slides: List<Slide>): List<SlideDetail> {
-                return slides.map { slide -> SlideDetail(slide.id!!, slide.imageFilePath, slide.script, slide.memo) }
+                return slides.map { slide ->
+                    SlideDetail(
+                        id = slide.id!!,
+                        imageFileId = slide.imageFile?.id,
+                        imageFilePath = slide.imageFilePath,
+                        script = slide.script,
+                        memo = slide.memo,
+                    )
+                }
             }
         }
     }

@@ -43,6 +43,7 @@ data class PracticeResponse(
 
     data class SlideDetail(
         val id: Long,
+        val imageFileId: Long?,
         val imageFilePath: String?,
         val script: String,
         val memo: String,
@@ -56,6 +57,7 @@ data class PracticeResponse(
 
                 return SlideDetail(
                     id = slide.id!!,
+                    imageFileId = slide.imageFile?.id,
                     imageFilePath = slide.imageFilePath,
                     script = slide.script,
                     memo = slide.memo,
