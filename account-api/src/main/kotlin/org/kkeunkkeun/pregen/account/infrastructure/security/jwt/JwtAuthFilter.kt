@@ -7,7 +7,9 @@ import jakarta.servlet.http.HttpServletResponse
 import org.kkeunkkeun.pregen.account.infrastructure.security.exception.FilterException
 import org.kkeunkkeun.pregen.account.infrastructure.security.exception.FilterExceptionResponse
 import org.kkeunkkeun.pregen.account.infrastructure.security.jwt.refreshtoken.RefreshTokenService
+import org.kkeunkkeun.pregen.common.infrastructure.DisCordService
 import org.kkeunkkeun.pregen.common.presentation.ErrorStatus
+import org.kkeunkkeun.pregen.common.presentation.PregenException
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.http.HttpStatus
@@ -21,6 +23,7 @@ class JwtAuthFilter(
     private val jwtTokenUtil: JwtTokenUtil,
     private val objectMapper: ObjectMapper,
 
+    private val disCordService: DisCordService,
     private val refreshTokenService: RefreshTokenService,
 ): OncePerRequestFilter() {
 
@@ -86,6 +89,7 @@ class JwtAuthFilter(
             response.contentType = "application/json"
             response.characterEncoding = "UTF-8"
             response.outputStream.write(objectMapper.writeValueAsBytes(errorResponse))
+            disCordService.sendDiscordAlertLog(PregenException(e.errorStatus, message), request)
         } else {
             response.status = HttpStatus.UNAUTHORIZED.value()
             response.contentType = "application/json"
@@ -97,6 +101,7 @@ class JwtAuthFilter(
             response.outputStream.write(
                 objectMapper.writeValueAsBytes(errorResponse)
             )
+            disCordService.sendDiscordAlertLog(PregenException(ErrorStatus.UNAUTHORIZED, message), request)
         }
     }
 }

@@ -15,6 +15,7 @@ class MessageHandlerImpl(
             "INSERT" -> handleInsert(message.sessionId, message)
             "UPDATE" -> handleUpdate(message.sessionId, message)
             "GET" -> handleGet(message.sessionId, message)
+            "PING" -> BaseMessage(message.sessionId, "HEALTH_CHECK", "Pong!")
             else -> BaseMessage(message.sessionId, "ERROR")
         }
     }

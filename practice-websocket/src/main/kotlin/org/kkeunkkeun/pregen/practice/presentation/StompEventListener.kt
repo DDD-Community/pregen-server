@@ -9,7 +9,7 @@ import org.springframework.stereotype.Component
 import org.springframework.web.socket.messaging.SessionDisconnectEvent
 
 @Component
-class SocketEventListener (
+class StompEventListener (
     private val practiceService: PracticeService,
 ){
 

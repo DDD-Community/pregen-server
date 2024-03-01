@@ -6,6 +6,7 @@ import jakarta.validation.Valid
 import org.jetbrains.annotations.NotNull
 import org.kkeunkkeun.pregen.account.domain.dto.AccountResponse
 import org.kkeunkkeun.pregen.account.domain.dto.AccountUpdateRequest
+import org.kkeunkkeun.pregen.account.domain.dto.SessionIdResponse
 import org.kkeunkkeun.pregen.account.presentation.annotation.AccountEmail
 import org.kkeunkkeun.pregen.account.service.AccountService
 import org.springframework.http.ResponseEntity
@@ -60,7 +61,7 @@ class AccountController(
     }
 
     @GetMapping("/sessionId")
-    fun getAccountSessionId(@AccountEmail email: String): ResponseEntity<String> {
+    fun getAccountSessionId(@AccountEmail email: String): ResponseEntity<SessionIdResponse> {
         return ResponseEntity.ok().body(accountService.getSessionId(email));
     }
 }
