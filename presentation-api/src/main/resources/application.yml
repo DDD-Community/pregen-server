@@ -35,6 +35,11 @@ spring:
       hibernate:
         format_sql: true
         use_sql_comments: true
+  rabbitmq:
+    host: ${RABBIT_MQ:localhost}
+    port: 5672
+    username: speech.application
+    password: admin
 file:
   base-path: ./data
   thumbnail-path: /thumbnails
