@@ -93,8 +93,12 @@ class PracticeService(
             val stopTime = Instant.now()
             val duration = Duration.between(startTime, stopTime)
 
-            val accumulatedTimeString = redisService.getHashField(sessionId, socketProperties.accumulatedPresentationTime)
-            val accumulatedTime = accumulatedTimeString?.let { Duration.parse(it) } ?: Duration.ZERO
+            val accumulatedTimeString = redisService.getHashField(sessionId, socketProperties.accumulatedPresentationTime) ?: "null"
+            val accumulatedTime: Duration = if (accumulatedTimeString == "null") {
+                Duration.ZERO
+            } else {
+                Duration.parse(accumulatedTimeString)
+            }
 
             newAccumulatedTime = accumulatedTime.plus(duration)
 
