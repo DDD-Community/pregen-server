@@ -51,34 +51,28 @@ class JwtAuthFilter(
 
             if (request.requestURI.contains("reissue")) {
                 val refreshToken = jwtTokenUtil.getTokenFromCookie("refreshToken", request)
-                if (!StringUtils.hasText(refreshToken)) {
-                    throw FilterException(ErrorStatus.UNAUTHORIZED, "헤더에 토큰이 존재하지 않습니다.")
-                }
-
-                if (!jwtTokenUtil.verifyToken(refreshToken) && !refreshTokenService.verifyToken("refreshToken", refreshToken)) {
-                    throw FilterException(ErrorStatus.INVALID_TOKEN, "유효하지 않은 토큰입니다.")
-                } else {
-                    val authentication = jwtTokenUtil.getAuthentication(refreshToken)
-                    SecurityContextHolder.getContext().authentication = authentication
-                }
+                verifyAndAuthenticateToken(refreshToken, "refreshToken")
             } else {
                 val accessToken = jwtTokenUtil.getTokenFromCookie("accessToken", request)
-                if (!StringUtils.hasText(accessToken)) {
-                    throw FilterException(ErrorStatus.UNAUTHORIZED, "헤더에 토큰이 존재하지 않습니다.")
-                }
-
-                if (!jwtTokenUtil.verifyToken(accessToken) && !refreshTokenService.verifyToken("accessToken", accessToken)) {
-                    throw FilterException(ErrorStatus.INVALID_TOKEN, "유효하지 않은 토큰입니다.")
-                } else {
-                    val authentication = jwtTokenUtil.getAuthentication(accessToken)
-                    SecurityContextHolder.getContext().authentication = authentication
-                }
+                verifyAndAuthenticateToken(accessToken, "accessToken")
             }
 
             filterChain.doFilter(request, response)
         } catch (e: FilterException) {
             log.error("Filter error: ${e.message}")
             handleException(request, response, e)
+        }
+    }
+
+    private fun verifyAndAuthenticateToken(tokenName: String, token: String) {
+        if (!StringUtils.hasText(token)) {
+            throw FilterException(ErrorStatus.BAD_REQUEST, "헤더에 토큰이 존재하지 않습니다.")
+        }
+        if (!jwtTokenUtil.verifyToken(token) && !refreshTokenService.verifyToken(tokenName, token)) {
+            throw FilterException(ErrorStatus.INVALID_TOKEN, "유효하지 않은 토큰입니다.")
+        } else {
+            val authentication = jwtTokenUtil.getAuthentication(token)
+            SecurityContextHolder.getContext().authentication = authentication
         }
     }
 
