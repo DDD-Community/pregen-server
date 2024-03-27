@@ -84,7 +84,7 @@ class AccountService(
     fun revokeAccount(request: HttpServletRequest, email: String) {
         val accessToken = jwtTokenUtil.getTokenFromCookie("accessToken", request)
         jwtTokenUtil.verifyToken(accessToken)
-        val account = accountRepository.findByEmail(email) ?: throw IllegalArgumentException("존재하지 않는 계정입니다.")
+        val account = findByEmail(email)
         oauthService.sendRevokeRequest(account.socialAuthToken, account.socialProvider)
         deleteMyAccount(account)
         refreshTokenService.deleteById(email)
@@ -92,7 +92,7 @@ class AccountService(
 
     @Transactional
     fun updateMyAccount(email: String, request: AccountUpdateRequest): AccountResponse {
-        val account = accountRepository.findByEmail(email) ?: throw IllegalArgumentException("존재하지 않는 계정입니다.")
+        val account = findByEmail(email)
         account.updateNickName(request.nickName)
         return AccountResponse(
             email = account.email,
@@ -108,7 +108,7 @@ class AccountService(
 
     @Transactional
     fun updateAccountSessionId(sessionId: String) {
-        val account = accountRepository.findBySessionId(sessionId) ?: throw PregenException(ErrorStatus.DATA_NOT_FOUND)
+        val account = findByEmail(sessionId)
         account.updateSessionId(sessionId)
     }
 
@@ -116,7 +116,7 @@ class AccountService(
     fun reIssueToken(request: HttpServletRequest, response: HttpServletResponse, email: String) {
         val refreshToken = jwtTokenUtil.getTokenFromCookie("refreshToken", request)
         jwtTokenUtil.verifyToken(refreshToken)
-        val account = accountRepository.findByEmail(email) ?: throw IllegalArgumentException("존재하지 않는 계정입니다.")
+        val account = findByEmail(email)
         val reissueSocialToken =
             oauthService.verifyAndReissueSocialToken(account.socialAuthToken, account.socialProvider)
         account.updateSocialAuthToken(reissueSocialToken)
@@ -133,7 +133,7 @@ class AccountService(
     }
 
     fun getMyAccount(email: String): AccountResponse {
-        val account = accountRepository.findByEmail(email) ?: throw IllegalArgumentException("존재하지 않는 계정입니다.")
+        val account = findByEmail(email)
         return AccountResponse(
             email = account.email,
             nickName = account.nickName,
@@ -142,7 +142,7 @@ class AccountService(
     }
 
     fun getSessionId(email: String): SessionIdResponse {
-        val account = accountRepository.findByEmail(email) ?: throw IllegalArgumentException("존재하지 않는 계정입니다.")
+        val account = findByEmail(email)
         return SessionIdResponse(account.sessionId)
     }
 
@@ -157,5 +157,9 @@ class AccountService(
         accountRepository.findByEmail(email)
             ?.deactivateNextSlideModal()
             ?: throw IllegalArgumentException("존재하지 않는 계정입니다.")
+    }
+
+    private fun findByEmail(email: String): Account {
+        return accountRepository.findByEmail(email) ?: throw PregenException(ErrorStatus.DATA_NOT_FOUND, "존재하지 않는 계정입니다.")
     }
 }
